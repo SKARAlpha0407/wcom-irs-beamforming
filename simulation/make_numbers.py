@@ -86,6 +86,17 @@ with open(os.path.join(REP, "numbers.tex"), "w") as fh:
         fh.write(f"\\newcommand{{\\{k}}}{{{v}}}\n")
     fh.write("\\newcommand{\\tableDist}{%\n" + table + "}\n")
 
+env = R["environment"]
+rows_env = [("Python", env["python"]), ("NumPy", env["numpy"]), ("CVXPY", env["cvxpy"]),
+            ("SCS (SDP solver)", env["scs"]), ("Matplotlib", env["matplotlib"]),
+            ("Solver settings", env["solver"]), ("Operating system", env["os"]),
+            ("Processor", env["cpu"]), ("Random seed", str(R["params"]["seed"]))]
+tex_env = ("\\begin{tabular}{ll}\n\\toprule\nItem & Version / setting \\\\\n\\midrule\n"
+           + "\n".join(f"{a} & {b} \\\\" for a, b in rows_env)
+           + "\n\\bottomrule\n\\end{tabular}")
+with open(os.path.join(REP, "numbers.tex"), "a") as fh:
+    fh.write("\\newcommand{\\tableEnv}{%\n" + tex_env + "}\n")
+
 os.makedirs(os.path.join(REP, "figures"), exist_ok=True)
 for name in os.listdir(FIG):
     if name.endswith(".pdf"):

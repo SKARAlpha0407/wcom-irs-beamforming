@@ -9,6 +9,13 @@ Goal:   minimise AP transmit power subject to a receive-SNR target gamma.
 Run:    python ris_sim.py            (full run, a few minutes on 8 cores)
         python ris_sim.py --quick    (small run for a smoke test)
 Output: ../figures/*.png|pdf and ../figures/results.json
+
+Phase-vector convention (same as the paper, Sec. III-A):
+  theta_n      physical phase shift of IRS element n, Theta = diag(e^{j theta_n})
+  v            = [e^{j theta_1}, ..., e^{j theta_N}]^H, i.e. v_n = e^{-j theta_n}
+  Phi          = diag(h_r^H) G,   so   h_r^H Theta G = v^H Phi
+In the code the array `v` always holds this v (entries e^{-j theta_n}); the
+reflected channel is therefore `v.conj() @ Phi`, and theta = -angle(v).
 """
 import argparse
 import json
@@ -75,23 +82,35 @@ def gen_channels(rng, N, d, k_ai=np.inf):
     return G, hr, hd
 
 
+def v_from_theta(theta):
+    """Optimisation vector v (entries e^{-j theta_n}) from physical phases."""
+    return np.exp(-1j * theta)
+
+
+def theta_from_v(v):
+    """Physical IRS phase shifts theta_n in [0, 2 pi) from v."""
+    return np.mod(-np.angle(v), 2 * np.pi)
+
+
 def power_given_v(Phi, hd, v):
-    """Min transmit power when the IRS uses reflection vector v (MRT at the AP).
+    """Min transmit power for IRS vector v (entries e^{-j theta_n}), MRT at the AP.
     Effective channel row: h = v^H Phi + hd, optimum w = h^H/||h||."""
     h = v.conj() @ Phi + hd
     return GAMMA * SIGMA2 / np.linalg.norm(h) ** 2
 
 
 def align_phases(Phi, hd, w):
-    """Closed-form IRS phases for a fixed transmit beamformer w:
-    make every reflected path add coherently with the direct path."""
-    return np.exp(1j * (np.angle(Phi @ w) - np.angle(hd @ w)))
+    """Closed-form IRS phases for a fixed transmit beamformer w (eq. (28)):
+    theta_n = arg(h_d^H w) - arg([h_r^H]_n g_n^H w), so that every reflected
+    path adds coherently with the direct path. Returns v = e^{-j theta}."""
+    theta = np.angle(hd @ w) - np.angle(Phi @ w)
+    return v_from_theta(theta)
 
 
 def quantise(v, bits):
-    levels = 2 ** bits
-    step = 2 * np.pi / levels
-    return np.exp(1j * np.round(np.angle(v) / step) * step)
+    """Round each physical phase theta_n to the nearest of 2^bits levels."""
+    step = 2 * np.pi / 2 ** bits
+    return v_from_theta(np.round(theta_from_v(v) / step) * step)
 
 
 def alternating_opt(Phi, hd, return_trace=False):
@@ -141,7 +160,7 @@ def sdr(Phi, hd, rng):
     L = U * np.sqrt(np.clip(lam, 0, None))
     r = crandn(rng, N + 1, N_RAND)
     vb = L @ r
-    cand = np.exp(1j * np.angle(vb[:N] / vb[N]))            # N x N_RAND
+    cand = np.exp(1j * np.angle(vb[:N] / vb[N]))            # N x N_RAND, each a v
     h = cand.conj().T @ Phi + hd                            # N_RAND x M
     p_rand = GAMMA * SIGMA2 / np.max(np.sum(np.abs(h) ** 2, axis=1))
     return p_lb, p_rand
@@ -162,7 +181,7 @@ def one_realisation(rng, N, d, with_sdr=True, bits=()):
     v = align_phases(Phi, hd, w)
     out["AP-IRS MRT"] = GAMMA * SIGMA2 / abs((v.conj() @ Phi + hd) @ w) ** 2
     # Random IRS phases, MRT on the resulting channel
-    v = np.exp(1j * rng.uniform(0, 2 * np.pi, N))
+    v = v_from_theta(rng.uniform(0, 2 * np.pi, N))
     out["Random phase shift"] = power_given_v(Phi, hd, v)
     if with_sdr:
         out["Lower bound (SDR)"], out["SDR + randomization"] = sdr(Phi, hd, rng)
@@ -181,18 +200,43 @@ def average(rng, N, d, n_real, **kw):
     return {k: float(to_dbm(np.mean(v))) for k, v in acc.items()}
 
 
-def convergence(seed, N, d, k_ai, n_real, n_it):
-    """Average power after each AO iteration and the average SDR lower bound."""
+def convergence(seed, N, d, k_ai, n_real, n_sdr, n_it):
+    """Average power after each AO iteration (n_real channels) and the average
+    SDR lower bound (the first n_sdr of those channels)."""
     rng = np.random.default_rng(seed)
     tr, lb = np.zeros(n_it + 1), 0.0
-    for _ in range(n_real):
+    for i in range(n_real):
         G, hr, hd = gen_channels(rng, N, d, k_ai)
         Phi = hr[:, None] * G
         t = alternating_opt(Phi, hd, return_trace=True)[2]
         t = t + [t[-1]] * (n_it + 1)
         tr += np.array(t[:n_it + 1])
-        lb += sdr(Phi, hd, rng)[0]
-    return to_dbm(tr / n_real).tolist(), float(to_dbm(lb / n_real))
+        if i < n_sdr:
+            lb += sdr(Phi, hd, rng)[0]
+    return to_dbm(tr / n_real).tolist(), float(to_dbm(lb / n_sdr))
+
+
+def environment():
+    """Software and hardware used for the run (reported in the report)."""
+    import platform
+    import matplotlib as mpl
+    try:
+        from importlib.metadata import version
+        scs_v = version("scs")
+    except Exception:
+        scs_v = "unknown"
+    cpu = platform.processor() or platform.machine()
+    try:
+        import subprocess
+        cpu = subprocess.run(["sysctl", "-n", "machdep.cpu.brand_string"],
+                             capture_output=True, text=True).stdout.strip() or cpu
+    except Exception:
+        pass
+    return {"python": platform.python_version(), "numpy": np.__version__,
+            "cvxpy": cp.__version__, "scs": scs_v, "matplotlib": mpl.__version__,
+            "os": f"{platform.system()} {platform.release()} ({platform.machine()})",
+            "cpu": f"{cpu}, {os.cpu_count()} cores",
+            "solver": "SCS via CVXPY, eps = 1e-5, default other settings"}
 
 
 STYLE = {
@@ -218,8 +262,9 @@ def main():
     ap.add_argument("--quick", action="store_true")
     ap.add_argument("--seed", type=int, default=2026)
     args = ap.parse_args()
-    n_real = 20 if args.quick else 1000   # channel realisations per point
-    n_sdr = 8 if args.quick else 200      # realisations for the SDP-based curves
+    n_real = 20 if args.quick else 1000   # realisations per point, Experiments 2 and 4
+    n_sdr = 8 if args.quick else 200      # realisations per point, Experiments 1 and 3
+                                          # (all schemes, same channels as the SDR bound)
     rng = np.random.default_rng(args.seed)
     outdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "figures")
     os.makedirs(outdir, exist_ok=True)
@@ -228,6 +273,7 @@ def main():
                               noise_dBm=NOISE_DBM, gamma_dB=GAMMA_DB,
                               realisations=n_real, realisations_sdr=n_sdr, randomisations=N_RAND,
                               seed=args.seed)}
+    results["environment"] = environment()
     plt.rcParams.update({"font.size": 11, "axes.grid": True, "grid.alpha": 0.4})
 
     # ---- Experiment 1: transmit power vs AP-user horizontal distance -------
@@ -236,7 +282,10 @@ def main():
     d_grid = [15, 20, 25, 30, 35, 40, 43, 45, 47, 49, 50]
     seeds = [int(x) for x in rng.integers(0, 2 ** 31, len(d_grid))]
     with mp.Pool(min(len(d_grid), os.cpu_count())) as pool:   # SDPs are slow
-        res1 = pool.starmap(average, [(sd, N1, d, n_sdr) for sd, d in zip(seeds, d_grid)])
+        res_sdp = pool.starmap(average, [(sd, N1, d, n_sdr) for sd, d in zip(seeds, d_grid)])
+    # Every scheme is averaged over the SAME n_sdr channels as the SDR lower
+    # bound; otherwise sampling noise can put a scheme "below" the bound.
+    res1 = res_sdp
     results["exp1_power_vs_distance"] = {"N": N1, "d": d_grid, "curves": {
         k: [r[k] for r in res1] for k in STYLE}}
     fig, ax = plt.subplots(figsize=(6.4, 4.6))
@@ -288,7 +337,7 @@ def main():
     k_name = {np.inf: "LoS (K = inf)", 10.0: "Rician (K = 10 dB)", 0.0: "Rayleigh (K = 0)"}
     seeds = [int(x) for x in rng.integers(0, 2 ** 31, len(k_list))]
     with mp.Pool(len(k_list)) as pool:
-        res3 = pool.starmap(convergence, [(sd, N1, d3, k, n_sdr, n_it)
+        res3 = pool.starmap(convergence, [(sd, N1, d3, k, n_sdr, n_sdr, n_it)
                                           for sd, k in zip(seeds, k_list)])
     results["exp3_convergence"] = {"N": N1, "d": d3, "curves": {
         k_name[k]: {"AO": r[0], "lower_bound": r[1]} for k, r in zip(k_list, res3)}}

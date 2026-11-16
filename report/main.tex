@@ -74,9 +74,7 @@ Reconfigurable Intelligent Surfaces (RIS); 5G/6G Communications
 {\large Submitted by\par}
 \vspace{6pt}
 \begin{tabular}{ll}
-Member 1 Name & Roll No. \\   % <-- fill in
-Member 2 Name & Roll No. \\   % <-- fill in
-Member 3 Name & Roll No. \\   % <-- fill in
+Shreyas Kumar Rai & 23UCC601 \\
 \end{tabular}
 
 \vspace{1.5cm}
@@ -229,8 +227,17 @@ Minimising the transmit power is therefore the same as maximising the gain of th
 
 \subsection{Step 2a: semidefinite relaxation (SDR)}
 
-Define $\vvec=[v_1,\dots,v_N]^H$ with $v_n=e^{j\theta_n}$ and $\Phm=\mathrm{diag}(\hrv^H)\,\Gm\in\mathbb{C}^{N\times M}$.
-Then $\hrv^H\Thm\Gm=\vvec^H\Phm$, and
+\textbf{Convention.} Following the paper, the optimisation vector is defined as
+\begin{equation}
+\vvec=\left[e^{j\theta_1},\dots,e^{j\theta_N}\right]^H,
+\qquad\text{so that}\qquad v_n=e^{-j\theta_n},
+\label{eq:vdef}
+\end{equation}
+that is, $\vvec$ holds the \emph{conjugates} of the physical reflection coefficients $e^{j\theta_n}$, and
+$\vvec^H=[e^{j\theta_1},\dots,e^{j\theta_N}]$. With $\Phm=\mathrm{diag}(\hrv^H)\,\Gm\in\mathbb{C}^{N\times M}$
+this gives $\hrv^H\Thm\Gm=\vvec^H\Phm$. The physical phases are recovered as $\theta_n=-\arg(v_n)$.
+The same convention is used everywhere below and in our code, where the reflected channel is computed
+as \texttt{v.conj() @ Phi} and $\theta_n$ as \texttt{-angle(v)}. Then
 \begin{equation}
 \left\|\vvec^H\Phm+\hdv^H\right\|^2 = \vvec^H\Phm\Phm^H\vvec + \vvec^H\Phm\hdv + \hdv^H\Phm^H\vvec + \|\hdv\|^2 .
 \end{equation}
@@ -256,7 +263,8 @@ that no scheme can beat. The solution $\Vm^\star$ generally has rank greater tha
 phase vector is recovered by \emph{Gaussian randomisation}: with the eigen-decomposition
 $\Vm^\star=\bm{U}\bm{\Sigma}\bm{U}^H$, draw $\bm{r}\sim\mathcal{CN}(\bm{0},\bm{I})$, form
 $\bar{\vvec}=\bm{U}\bm{\Sigma}^{1/2}\bm{r}$, and set
-$v_n=\exp\!\left(j\arg(\bar v_n/\bar v_{N+1})\right)$. This is repeated many times and the best
+$v_n=\exp\!\left(j\arg(\bar v_n/\bar v_{N+1})\right)$, which is again in the convention
+\eqref{eq:vdef}, so the phase shifts applied at the IRS are $\theta_n=-\arg(v_n)$. This is repeated many times and the best
 candidate is kept. The drawback of SDR is its cost: the SDP has $(N+1)^2$ unknowns, so the solve time
 grows quickly with $N$.
 
@@ -333,6 +341,20 @@ link distances.
 \item Repeat steps 2--3 many times, average the power in watts, and convert the average to dBm.
 \end{enumerate}
 The random seed is fixed, so the figures in this report can be regenerated exactly.
+Experiments 1 and 3 compare every scheme with the SDR lower bound, which must be computed for each
+channel realisation by solving an SDP. To make this comparison valid, \emph{all} schemes in these two
+experiments are evaluated on the same \nSdr{} channel realisations per point as the bound. (When we
+first averaged the closed-form schemes over more realisations than the bound, sampling noise of a few
+tenths of a dB placed them slightly \emph{below} the lower bound at some distances, which is impossible
+on identical channels.) Experiments 2 and 4 need no SDP and use \nReal{} realisations per point.
+Table~\ref{tab:env} lists the software and hardware used.
+
+\begin{table}[H]
+\centering
+\caption{Software environment of the simulations.}
+\label{tab:env}
+\tableEnv
+\end{table}
 
 \textbf{Channel model.} The large-scale path loss of a link of length $d$ is
 $L(d)=C_0\,(d/D_0)^{-\alpha}$ with reference distance $D_0=1$\,m. The AP--IRS link is assumed to be
@@ -378,7 +400,7 @@ Noise power, $\sigma^2$ & $-80$ dBm \\
 SNR target, $\gamma$ & 10 dB \\
 Stopping threshold, $\varepsilon$ & $10^{-4}$ \\
 Gaussian randomisations & \nRand \\
-Channel realisations per point & \nReal{} (\nSdr{} for curves that need the SDP) \\
+Channel realisations per point & \nSdr{} (Exp.\ 1, 3; all schemes); \nReal{} (Exp.\ 2, 4) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -560,7 +582,7 @@ use a uniform linear array. With a rank-one LoS AP--IRS channel the optimal powe
 magnitudes of the channel entries, so the geometry does not change the averages.
 \item \textbf{Number of elements in the distance sweep.} We did not find the value of $N$ used for
 Fig.~3 of the paper in its text, and used $N=\Nsim$.
-\item \textbf{Monte Carlo accuracy.} The SDP-based curves use \nSdr{} channel realisations, which
+\item \textbf{Monte Carlo accuracy.} Experiments 1 and 3 use \nSdr{} channel realisations, which
 leaves a statistical uncertainty of a few tenths of a dB, mainly in the ``without IRS'' curve, where a
 single deep fade of the direct link has a large effect on the average.
 \item \textbf{Solver.} We solve the SDP with the first-order solver SCS at a tolerance of $10^{-5}$,

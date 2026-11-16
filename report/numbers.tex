@@ -12,7 +12,7 @@
 \newcommand{\gapLB}{less than 0.01}
 \newcommand{\gapUserMRT}{7.3}
 \newcommand{\gapIrsMRT}{12.5}
-\newcommand{\gapRand}{15.4}
+\newcommand{\gapRand}{15.6}
 \newcommand{\dropA}{5.7}
 \newcommand{\dropB}{5.9}
 \newcommand{\dropFifteen}{0.4}
@@ -37,7 +37,23 @@ SDR + randomisation & $-3.3$ & $3.7$ & $7.9$ & $7.7$ & $3.5$ & $-3.6$ \\
 Alternating optimisation & $-3.3$ & $3.7$ & $7.9$ & $7.7$ & $3.5$ & $-3.6$ \\
 AP--user MRT & $-3.3$ & $3.7$ & $8.2$ & $9.3$ & $7.6$ & $3.8$ \\
 AP--IRS MRT & $9.2$ & $12.1$ & $12.9$ & $9.4$ & $3.9$ & $-3.5$ \\
-Random phase shift & $-3.2$ & $4.1$ & $9.2$ & $12.4$ & $13.5$ & $11.8$ \\
+Random phase shift & $-3.2$ & $4.1$ & $9.2$ & $12.4$ & $13.4$ & $12.0$ \\
 Without IRS & $-3.2$ & $4.1$ & $9.2$ & $12.5$ & $14.1$ & $14.8$ \\
+\bottomrule
+\end{tabular}}
+\newcommand{\tableEnv}{%
+\begin{tabular}{ll}
+\toprule
+Item & Version / setting \\
+\midrule
+Python & 3.12.13 \\
+NumPy & 2.4.3 \\
+CVXPY & 1.9.3 \\
+SCS (SDP solver) & 3.3.2 \\
+Matplotlib & 3.10.8 \\
+Solver settings & SCS via CVXPY, eps = 1e-5, default other settings \\
+Operating system & Darwin 25.5.0 (arm64) \\
+Processor & Apple M2, 8 cores \\
+Random seed & 2026 \\
 \bottomrule
 \end{tabular}}

@@ -25,9 +25,10 @@ python make_numbers.py
 python ../presentation/build_deck.py
 ```
 
-## Before you submit
+## Notes
 
-1. Put your names and roll numbers on the report title page (`report/main.tex`) and the first slide.
-2. Replace "Member 1/2/3" in the slide footers and outline with your names.
-3. Check Table I of the report against Section V of the paper, and edit any value that differs
-   (the constants are at the top of `ris_sim.py`), then re-run.
+- Phase convention: `v = [e^{j theta_1}, ..., e^{j theta_N}]^H`, so `v_n = e^{-j theta_n}` (as in the paper).
+  The code computes the reflected channel as `v.conj() @ Phi` and the physical phases as `-angle(v)`.
+- Experiments 1 and 3 (compared with the SDR lower bound) evaluate every scheme on the same 200
+  channel realisations per point; Experiments 2 and 4 use 1000.
+- The software versions of the last run are stored in `figures/results.json` and listed in the report.

@@ -17,7 +17,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 FIG = os.path.join(HERE, "..", "figures")
 R = json.load(open(os.path.join(FIG, "results.json")))
 
-GROUP = ["Member 1 (Roll No.)", "Member 2 (Roll No.)", "Member 3 (Roll No.)"]
+GROUP = ["Shreyas Kumar Rai (23UCC601)"]
 COURSE = "Wireless Communication (Theory) | Project Presentation | November 2026"
 
 NAVY = RGBColor(0x14, 0x32, 0x4A)
@@ -140,7 +140,7 @@ def fmt(x, nd=1):
     return f"{x:.{nd}f}"
 
 
-M1, M2, M3 = "Member 1", "Member 2", "Member 3"
+M1 = M2 = M3 = "Shreyas Kumar Rai"
 
 # ============================ 1. Title =====================================
 state["n"] += 1
@@ -157,24 +157,24 @@ text(s, 0.8, 3.8, 11.5, 1.0,
 text(s, 0.8, 5.3, 11.5, 1.0, ["     ".join(GROUP)], size=18, bold=True, color=WHITE)
 text(s, 0.8, 6.5, 11.5, 0.4, [COURSE], size=13, color=RGBColor(0xC9, 0xD8, 0xE3))
 s.notes_slide.notes_text_frame.text = (
-    "Introduce the group and the paper. One line: the paper asks how a passive reflecting surface "
+    "Introduce yourself and the paper. One line: the paper asks how a passive reflecting surface "
     "can be configured together with the base-station beamformer so that a user gets its target SNR "
     "with the least transmit power.")
 
 # ============================ 2. Outline ===================================
 s = new_slide("What we will cover", M1,
-              "Give the roadmap and say who presents what. Keep this under 30 seconds.")
-card(s, 0.6, 1.6, 3.9, 3.0, "1  Overview  (" + M1 + ")",
+              "Give the roadmap. Keep this under 30 seconds.")
+card(s, 0.6, 1.6, 3.9, 3.0, "1  Overview",
      [("The problem the paper solves", {"bullet": True}),
       ("Why the problem matters", {"bullet": True}),
       ("Why we chose it", {"bullet": True}),
       ("System model", {"bullet": True})], size=16)
-card(s, 4.72, 1.6, 3.9, 3.0, "2  Solution  (" + M2 + ")",
+card(s, 4.72, 1.6, 3.9, 3.0, "2  Solution",
      [("Problem formulation", {"bullet": True}),
       ("Semidefinite relaxation (SDR)", {"bullet": True}),
       ("Alternating optimization", {"bullet": True}),
       ("The N-squared power scaling law", {"bullet": True})], size=16, accent=NAVY)
-card(s, 8.84, 1.6, 3.9, 3.0, "3  Results  (" + M3 + ")",
+card(s, 8.84, 1.6, 3.9, 3.0, "3  Results",
      [("Our Python reproduction", {"bullet": True}),
       ("Four experiments and what they show", {"bullet": True}),
       ("Our results against the paper", {"bullet": True}),
@@ -234,7 +234,7 @@ card(s, 6.8, 1.6, 5.9, 4.7, "Why we selected it", [
 s = new_slide("System model", M1,
               "Walk through the figure. Three channels: direct AP-user h_d, AP-IRS G, IRS-user h_r. "
               "The IRS applies a diagonal phase matrix Theta. The user receives the direct signal plus "
-              "N reflected copies. Hand over to Member 2.")
+              "N reflected copies.")
 picture(s, "system_model.png", 0.5, 1.45, w=7.6)
 eq(s, 8.4, 1.6, 4.4, 1.25, ["Received signal", "y = (hᵣᴴ Θ G + h_dᴴ) w s + n"], size=18)
 text(s, 8.4, 3.05, 4.4, 3.4, [
@@ -280,7 +280,7 @@ s = new_slide("Solution 1: semidefinite relaxation (SDR)", M2,
               "convex SDP that a solver handles. Its optimum is an upper bound on the gain, so a lower "
               "bound on power. Then recover a valid phase vector by Gaussian randomization.")
 text(s, 0.6, 1.5, 6.2, 5.0, [
-    ("Stack the phases: v = [e^{jθ₁}, ..., e^{jθ_N}]ᴴ, and let Φ = diag(hᵣᴴ) G.",
+    ("Stack the phases: v = [e^(jθ₁), ..., e^(jθ_N)]ᴴ, so vₙ = e^(−jθₙ) (the paper's convention). With Φ = diag(hᵣᴴ) G: hᵣᴴΘG = vᴴΦ.",
      {"bullet": True}),
     ("The channel gain becomes a quadratic form  v̄ᴴ R v̄  with |v̄ₙ| = 1.", {"bullet": True}),
     ("Lift: V = v̄ v̄ᴴ.  The objective tr(RV) is now linear, but V must be rank one.",
@@ -332,7 +332,7 @@ s = new_slide("Key insight: the N-squared power law", M2,
               "This is the headline theory result. When the reflected link dominates, received power grows "
               "with N squared. One factor of N because the surface collects N times more energy, another "
               "factor of N because the N reflections add coherently in amplitude. Compare: massive MIMO "
-              "with N antennas gives only a factor N. Hand over to Member 3.")
+              "with N antennas gives only a factor N.")
 eq(s, 0.6, 1.6, 12.1, 1.3, [
     ("Received power with optimal phases  \u221d  N\u00b2      \u21d2      "
      "required transmit power  \u221d  1/N\u00b2", {"bold": True})], size=20)
@@ -361,7 +361,7 @@ rows = [("AP antennas, M", str(P["M"])),
         ("Fading", "AP-IRS: LoS;  others: Rayleigh"),
         ("Noise power σ²", f"{P['noise_dBm']:.0f} dBm"),
         ("SNR target γ", f"{P['gamma_dB']:.0f} dB"),
-        ("Channel realizations", f"{P['realisations']} ({P['realisations_sdr']} for SDP curves)"),
+        ("Channel realizations", f"{P['realisations_sdr']} (Exp. 1, 3)  /  {P['realisations']} (Exp. 2, 4)"),
         ("Gaussian randomizations", str(P["randomisations"]))]
 tbl = s.shapes.add_table(len(rows) + 1, 2, Inches(0.6), Inches(1.55), Inches(6.9), Inches(4.9)).table
 tbl.columns[0].width, tbl.columns[1].width = Inches(4.1), Inches(2.8)
