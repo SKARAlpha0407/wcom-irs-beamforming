@@ -354,9 +354,8 @@ largest path-loss exponent to represent blockage.
 
 \subsection{Parameters}
 
-Table~\ref{tab:params} lists the parameters. They follow the single-user setup of the paper as we
-understood it. The points where our model is simpler than the paper's are discussed in
-Section~\ref{sec:diff}.
+Table~\ref{tab:params} lists the parameters. They are the values stated in Section~V of the paper for the single-user
+case. The remaining differences in the model are discussed in Section~\ref{sec:diff}.
 
 \begin{table}[H]
 \centering
@@ -451,7 +450,7 @@ the law holds here even though the direct link is present and $M>1$, which are n
 simplified derivation: near the IRS the reflected link is simply much stronger than the direct one.
 
 For the user near the AP ($d=15$\,m) the power changes by only \dropFifteen\udB{} over the whole range
-of $N$, because the direct link dominates and the IRS is far away. The user at $d=43$\,m lies between
+of $N$, because the direct link dominates and the IRS is far away. The user at $d=41$\,m lies between
 the two cases. Its curve is flat for small $N$ and steepens as $N$ grows and the reflected link starts
 to dominate. An IRS is therefore most useful for users that are close to it and poorly served by the
 AP, and its size must be large enough for the reflected link to overtake the direct one.
@@ -524,17 +523,43 @@ clearly sub-optimal in the other region;
 \item the transmit power near the IRS falls by about 6\udB{} when $N$ is doubled.
 \end{itemize}
 
-The absolute power levels need not coincide with those in the paper, for the following reasons.
+All parameters stated in Section~V of the paper (Table~\ref{tab:params}) are used unchanged. The
+\emph{trends} agree, but our absolute power levels are a few dB lower than the paper's, as the
+following numbers show.
+
+\begin{table}[H]
+\centering
+\caption{Our results against values read from the paper (transmit power in dBm).}
+\label{tab:vspaper}
+\begin{tabular}{lrrr}
+\toprule
+Case & Paper & Ours & Difference \\
+\midrule
+Without IRS, $d=50$\,m (Fig.~3 of the paper) & $\approx 19$ & $\noIrsFifty$ & $\approx \offNoIrs$ \\
+Joint design, $d=50$\,m, $N=30$ (text of the paper) & $2$ & $\aoNthirty$ & $\offNthirty$ \\
+Joint design, $d=50$\,m, $N=60$ (text of the paper) & $-4$ & $\aoNsixty$ & $\offNsixty$ \\
+Saving from doubling $N$ (30 to 60) & $\approx 6$\,dB & $\dropPaper$\,dB & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The ``without IRS'' case is the simplest check, since it involves no optimisation at all. For an
+$M$-antenna Rayleigh channel with path loss $L$, $\|\hdv\|^2/L$ follows a Gamma$(M,1)$ distribution,
+so the average power is $\mathbb{E}[\gamma\sigma^2/\|\hdv\|^2]=\gamma\sigma^2/\big((M-1)L\big)$. With
+the stated parameters this gives $\closedNoIrs$\,dBm at $d=50$\,m, which matches our simulation
+($\noIrsFifty$\,dBm). The paper's curve is about $\offNoIrs$\,dB higher. We could not find the cause
+in the text of the paper. Possible reasons are an unstated difference in the channel normalisation, or
+averaging over a different quantity. Because this offset already appears in the case without the
+IRS, it is a difference in the channel model and not in the beamforming algorithms. The offset is
+smaller for the IRS-aided curves, which depend on the AP--IRS and IRS--user links as well.
+
+The remaining differences between our model and the paper's are minor:
 \begin{enumerate}[leftmargin=1.6em,itemsep=2pt]
-\item \textbf{Antenna and element gains.} We use isotropic (0\,dBi) antennas and elements. Any gain
-assumed for the AP antennas or the reflecting elements shifts the curves vertically without changing
-their shape.
-\item \textbf{Array geometry.} We model both the AP and the IRS as uniform linear arrays to generate
-the LoS response. With a rank-one LoS channel the optimal power depends only on the magnitudes of the
-entries, so this does not affect the averages, but it is a difference in the model.
-\item \textbf{Parameter values.} The values in Table~\ref{tab:params} follow our reading of the paper.
-A different number of AP antennas, number of elements or Rician factor in a particular figure of the
-paper would change the corresponding curve.
+\item \textbf{Array geometry.} The paper uses a $5\times N/5$ uniform rectangular array at the IRS; we
+use a uniform linear array. With a rank-one LoS AP--IRS channel the optimal power depends only on the
+magnitudes of the channel entries, so the geometry does not change the averages.
+\item \textbf{Number of elements in the distance sweep.} We did not find the value of $N$ used for
+Fig.~3 of the paper in its text, and used $N=\Nsim$.
 \item \textbf{Monte Carlo accuracy.} The SDP-based curves use \nSdr{} channel realisations, which
 leaves a statistical uncertainty of a few tenths of a dB, mainly in the ``without IRS'' curve, where a
 single deep fade of the direct link has a large effect on the average.

@@ -4,6 +4,8 @@ import json
 import os
 import shutil
 
+import numpy as np
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 FIG = os.path.join(HERE, "..", "figures")
 REP = os.path.join(HERE, "..", "report")
@@ -19,6 +21,12 @@ N = e2["N"]
 ao50 = e2["curves"]["d=50"]["Alternating optimization"]
 ao15 = e2["curves"]["d=15"]["Alternating optimization"]
 ray = e3["Rayleigh (K = 0)"]
+
+
+P = R["params"]
+_L = 10 ** (P["C0_dB"] / 10) * np.hypot(50, P["dv"]) ** (-P["alpha_AU"])
+no_irs_closed = 10 * np.log10(10 ** (P["gamma_dB"] / 10) * 10 ** ((P["noise_dBm"] - 30) / 10)
+                              / ((P["M"] - 1) * _L)) + 30
 
 
 def f(x, nd=1):
@@ -52,6 +60,13 @@ m = {
     "gapRay": small(ray["AO"][-1] - ray["lower_bound"]),
     "lossOne": f(e4["1-bit phase shifters"][-1] - e4["Alternating optimization"][-1]),
     "lossTwo": f(e4["2-bit phase shifters"][-1] - e4["Alternating optimization"][-1]),
+    "aoNthirty": f(ao50[N.index(30)]),
+    "aoNsixty": f(ao50[N.index(60)]),
+    "offNthirty": f(2.0 - ao50[N.index(30)]),
+    "offNsixty": f(-4.0 - ao50[N.index(60)]),
+    "dropPaper": f(ao50[N.index(30)] - ao50[N.index(60)]),
+    "closedNoIrs": f(no_irs_closed),
+    "offNoIrs": f(19.0 - c["Without IRS"][i50], 0),
     "lossThree": f(e4["3-bit phase shifters"][-1] - e4["Alternating optimization"][-1]),
 }
 

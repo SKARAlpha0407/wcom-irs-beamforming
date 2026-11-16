@@ -419,7 +419,7 @@ text(s, 8.3, 1.5, 4.5, 5.3, [
     ("Theory predicts 6.0 dB per doubling: the N-squared law is confirmed.", {"bullet": True}),
     (f"d = 15 m: growing N from {N2[0]} to {N2[-1]} changes the power by only {fmt(drop15)} dB.",
      {"bullet": True}),
-    ("d = 43 m: the slope steepens as N grows, when the reflected link starts to dominate.",
+    ("d = 41 m: the slope steepens as N grows, when the reflected link starts to dominate.",
      {"bullet": True}),
     ("Lesson: an IRS helps most for users that are close to it and far from the AP.", {"bullet": True}),
 ], size=15, space=9)
@@ -455,16 +455,17 @@ card(s, 0.6, 1.6, 5.9, 3.9, "What we reproduced", [
     ("About 6 dB saved per doubling of N near the IRS", {"bullet": True}),
     ("Alternating optimization converges in a few steps", {"bullet": True}),
 ], size=16)
-card(s, 6.8, 1.6, 5.9, 3.9, "Where our numbers can differ, and why", [
-    ("Antenna and element gains: we use 0 dBi everywhere, which shifts the absolute dBm levels",
-     {"bullet": True}),
-    ("Array geometry: we use linear arrays for the LoS response; this does not change the average power",
-     {"bullet": True}),
-    ("Fewer channel realizations for the SDP curves, so a small statistical uncertainty", {"bullet": True}),
-    ("Different SDP solver (SCS in Python instead of CVX in MATLAB)", {"bullet": True}),
-    ("Scope: single-user case only; the multiuser SINR problem was studied but not simulated",
-     {"bullet": True}),
-], size=15, accent=RED)
+card(s, 6.8, 1.6, 5.9, 3.9, "Where our numbers differ", [
+    ("All parameters stated in the paper are used unchanged.", {"bullet": True}),
+    (f"Without IRS at d = 50 m: paper \u2248 19 dBm, ours {fmt(c1['Without IRS'][i50])} dBm. "
+     "Our value matches the closed-form average, so the gap is in the channel model, "
+     "not the algorithms.", {"bullet": True}),
+    (f"Joint design, d = 50 m: paper 2 / \u22124 dBm at N = 30 / 60; ours {fmt(ao50[N2.index(30)])} / "
+     f"{fmt(ao50[N2.index(60)])} dBm.", {"bullet": True}),
+    (f"Saving from doubling N: paper \u2248 6 dB, ours {fmt(ao50[N2.index(30)] - ao50[N2.index(60)])} dB.",
+     {"bullet": True, "bold": True, "color": TEAL}),
+    ("Single-user case only; multiuser part studied, not simulated.", {"bullet": True}),
+], size=14, accent=RED)
 
 # ============================ 15. Challenges ===============================
 s = new_slide("Challenges and how we handled them", M3,

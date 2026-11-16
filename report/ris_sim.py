@@ -34,7 +34,7 @@ ALPHA_IU = 2.8        # path-loss exponent IRS-user
 ALPHA_AU = 3.5        # path-loss exponent AP-user  (obstructed direct link)
 NOISE_DBM = -80.0     # receiver noise power [dBm]
 GAMMA_DB = 10.0       # SNR target [dB]
-N_RAND = 100          # Gaussian randomisations for the SDR scheme
+N_RAND = 1000        # Gaussian randomisations for the SDR scheme (as in the paper)
 AO_EPS = 1e-4         # stopping threshold of alternating optimisation
 AO_MAX_IT = 50
 
@@ -252,7 +252,7 @@ def main():
     # ---- Experiment 2: transmit power vs number of IRS elements ------------
     t0 = time.time()
     N_grid = [10, 20, 30, 40, 50, 60, 80, 100, 120, 160]
-    d_list = [15, 43, 50]
+    d_list = [15, 41, 50]          # user positions of Fig. 4 in the paper
     res2 = {d: [average(rng, N, d, n_real, with_sdr=False) for N in N_grid]
             for d in d_list}
     results["exp2_power_vs_N"] = {"N": N_grid, "curves": {
@@ -260,7 +260,7 @@ def main():
                    for k in ("Alternating optimization", "Without IRS")}
         for d in d_list}}
     fig, ax = plt.subplots(figsize=(6.4, 4.6))
-    cols = {15: "tab:green", 43: "tab:orange", 50: "tab:blue"}
+    cols = {15: "tab:green", 41: "tab:orange", 50: "tab:blue"}
     for d in d_list:
         ax.semilogx(N_grid, [r["Alternating optimization"] for r in res2[d]],
                     color=cols[d], marker="o", mfc="none", lw=1.5,
