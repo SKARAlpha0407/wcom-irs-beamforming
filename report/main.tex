@@ -157,13 +157,13 @@ in Section~\ref{sec:diff}.
 
 \subsection{Importance and relevance}
 
-This paper~\cite{wu} is one of the first to treat the AP beamformer and the IRS phases as a joint optimisation
-problem, and it established two results that later work relies on. The first is an algorithmic
-template, alternating optimisation with a semidefinite-relaxation benchmark, that has been reused for
-IRS-aided secure communication, wireless power transfer, UAV links and integrated sensing. The second
-is the \emph{squared power gain}~\cite{wu,wu_mag}: the received power grows with $N^2$, which is faster than the
-factor $N$ obtained from an $N$-antenna active array. This scaling law is the main quantitative
-argument for the use of large passive surfaces, and it is the result that we set out to confirm.
+This paper was among the first to consider the joint optimisation of the AP transmit beamforming and
+the IRS phase shifts~\cite{wu}. It presented a key algorithmic framework, alternating optimisation with
+SDR providing a performance bound, which has since been applied to different scenarios with IRS, such
+as secure communications, wireless power transfer, UAV communications and integrated
+sensing~\cite{wu_tutorial}. Moreover, it showed that, as $N$ grows large, the received signal power can
+scale up with $N^2$, i.e., significantly faster than the order-$N$ gain of an $N$-antenna active array
+such as massive MIMO~\cite{wu}. This motivates the deployment of large passive reflecting surfaces.
 
 %=============================================================================
 \section{Solution Presented in the Paper}
@@ -678,6 +678,9 @@ pp.~5394--5409, Nov. 2019.
 \bibitem{wu_mag} Q.~Wu and R.~Zhang, ``Towards smart and reconfigurable environment: Intelligent
 reflecting surface aided wireless network,'' \emph{IEEE Commun. Mag.}, vol.~58, no.~1, pp.~106--112,
 Jan. 2020.
+\bibitem{wu_tutorial} Q.~Wu, S.~Zhang, B.~Zheng, C.~You, and R.~Zhang, ``Intelligent reflecting
+surface-aided wireless communications: A tutorial,'' \emph{IEEE Trans. Commun.}, vol.~69, no.~5,
+pp.~3313--3351, May 2021.
 \bibitem{wu_discrete} Q.~Wu and R.~Zhang, ``Beamforming optimization for wireless network aided by
 intelligent reflecting surface with discrete phase shifts,'' \emph{IEEE Trans. Commun.}, vol.~68,
 no.~3, pp.~1838--1851, Mar. 2020.
