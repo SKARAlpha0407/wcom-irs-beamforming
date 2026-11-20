@@ -325,15 +325,16 @@ gain of only $N$, or $3\udB$ per doubling.
 
 \subsection{Extension to several users}
 
-The paper also treats $K$ users~\cite[Sec.~IV]{wu} served at the same time. Each user then has an SINR constraint that
-includes the interference from the beams of the other users, and MRT is no longer optimal. The same
-alternating idea is used. For fixed phases, the transmit beamformers are found from a standard
-second-order cone programme (or with minimum mean-square-error beamforming). For fixed beamformers,
-the phases are found from a feasibility problem that is again relaxed to an SDP. A lower-complexity
-two-stage variant is also given. The main finding is that a well-configured IRS not only strengthens
-the wanted signal near the surface but also helps to suppress interference between users. We studied
-this part but restricted our simulations to the single-user case, as discussed in
-Section~\ref{sec:limits}.
+In this case, $K$ users were considered~\cite[Sec.~IV]{wu}. As there are multiple users, interference
+from the other users' beams is present, and therefore the SINR constraint for each user includes this
+interference. The same alternating method is used to solve it, but given a set of phases, the transmit
+beamformers are found by solving a standard second-order cone programme (SOCP), whose solution is
+minimum mean-square-error (MMSE) type beamforming. Similarly, given a set of beamformers, the phases
+can be solved. In this case, however, the problem becomes a feasibility problem, which is again solved
+approximately by semidefinite relaxation. A reduced-complexity two-stage method is also given. It was
+found that an appropriately configured IRS can not only strengthen the desired signal for users near
+the surface, but also suppress the interference between users. This part was studied, but simulations
+were only performed for the single-user case (Section~\ref{sec:limits}).
 
 %=============================================================================
 \section{Simulation and Reproduction of Results}
@@ -341,24 +342,27 @@ Section~\ref{sec:limits}.
 
 \subsection{Methodology}
 
-We wrote the simulator from the equations above in Python (Appendix~\ref{app:code}). NumPy is used for
-the channels and for the closed-form algorithms, CVXPY with the SCS solver for the SDP \eqref{eq:sdr},
-and Matplotlib for the plots. The procedure is a Monte Carlo simulation:
+The simulator was written in Python (Appendix~\ref{app:code}). NumPy was used to generate the channels
+and implement the closed-form methods. CVXPY (with the SCS solver) was used to solve the
+SDP~\eqref{eq:sdr}. Finally, Matplotlib was used to create the plots. The following steps were followed
+to produce the results:
 \begin{enumerate}[leftmargin=1.6em,itemsep=2pt]
-\item Place the user at horizontal distance $d$ from the AP (Fig.~\ref{fig:model}) and compute the three
-link distances.
-\item Draw one random realisation of $\Gm$, $\hrv$ and $\hdv$.
-\item Compute the transmit power required by every scheme \emph{on the same channels}.
-\item Repeat steps 2--3 many times, average the power in watts, and convert the average to dBm.
+\item Find the distances of the three links based on the user being at horizontal distance $d$ from the
+AP (see Fig.~\ref{fig:model}).
+\item Generate one random instance of $\Gm$, $\hrv$ and $\hdv$.
+\item Calculate the required transmit power for all schemes with these same channel instances.
+\item Repeat steps 2 and 3 many times, and take the average of the power (in watts). Convert the
+average to dBm.
 \end{enumerate}
-The random seed is fixed, so the figures in this report can be regenerated exactly.
-Experiments 1 and 3 compare every scheme with the SDR lower bound, which must be computed for each
-channel realisation by solving an SDP. To make this comparison valid, \emph{all} schemes in these two
-experiments are evaluated on the same \nSdr{} channel realisations per point as the bound. (When we
-first averaged the closed-form schemes over more realisations than the bound, sampling noise of a few
-tenths of a dB placed them slightly \emph{below} the lower bound at some distances, which is impossible
-on identical channels.) Experiments 2 and 4 need no SDP and use \nReal{} realisations per point.
-Table~\ref{tab:env} lists the software and hardware used.
+A fixed random seed ensures that the figures in this report can be reproduced identically. In
+Experiments 1 and 3, all schemes are compared with the SDR lower bound. This means that for each
+channel instance, an SDP must be solved to determine this value. To ensure the comparison is fair, all
+schemes in Experiments 1 and 3 were evaluated on the same channel instances as the bound (\nSdr{} per
+point). In an earlier run, the closed-form schemes were averaged over more realisations than the bound.
+Because of this, sampling noise of up to about 0.3\,dB placed them slightly below the lower bound at
+certain distances. This would be impossible if they were evaluated on exactly the same channels as the
+bound. Experiments 2 and 4 do not require SDPs, so they are cheap to run and use \nReal{} realisations
+per point. The software and hardware used are shown in Table~\ref{tab:env}.
 
 \begin{table}[H]
 \centering
