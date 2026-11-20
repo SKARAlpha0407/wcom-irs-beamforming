@@ -493,6 +493,7 @@ to dominate. An IRS is therefore most useful for users that are close to it and 
 AP, and its size must be large enough for the reflected link to overtake the direct one.
 
 \subsection{Experiment 3: convergence of the alternating optimisation}
+\label{sec:exp3}
 
 Figure~\ref{fig:conv} shows the transmit power after each iteration of the alternating optimisation
 for a user at $d=45$\,m, together with the SDR lower bound. Iteration~0 is the starting point,
@@ -612,67 +613,78 @@ resolution.
 
 \subsection{Key outcomes and findings}
 
-The paper shows that a passive reflecting surface, configured jointly with the transmit beamformer,
-can reduce the transmit power needed to serve a user by a large amount. For a single user the optimal
-beamformer is MRT on the combined channel, so the problem reduces to choosing the IRS phases. The
-paper gives a semidefinite relaxation that provides a performance bound and a near-optimal solution,
-and a closed-form alternating algorithm with very low complexity. It also proves that the received
-power grows with the square of the number of elements.
+A large reduction in the transmit power required to serve a user near the IRS is achievable using the
+passive reflecting surface. In the case of a single user, the optimal transmit beamformer is MRT on the
+combined (direct plus reflected) channel, and thus the problem reduces to optimising the IRS phase
+shifts. A bound on the performance can be obtained using semidefinite relaxation. Near-optimal
+solutions have been found using both semidefinite relaxation with Gaussian randomisation and a
+low-complexity closed-form alternating algorithm. It has been proven that, for large $N$, increasing
+the number of elements increases the received power quadratically~\cite{wu}.
 
-Our own simulations confirm these findings. With $M=\Msim$ and $N=\Nsim$, a user next to the IRS needs
-\saveFifty\udB{} less transmit power than without the IRS. The alternating optimisation is within
-\gapLB\udB{} of the lower bound. Doubling $N$ saves \dropA--\dropB\udB{} near the IRS, in agreement with
-the 6\udB{} predicted by the $N^2$ law. In addition we found that the algorithm is exactly optimal in
-one step when the AP--IRS channel is LoS, and that 2-bit phase shifters lose only \lossTwo\udB.
+The trends of these results were confirmed by simulation; the absolute power levels differ from the
+paper's by a few dB (Section~\ref{sec:diff}). Using $M=\Msim$ antennas at the AP and $N=\Nsim$
+elements at the IRS, \saveFifty\,dB less transmit power was needed to serve a user next to the IRS
+($d=50$\,m) than without the IRS. The alternating optimisation algorithm is near-optimal, with
+\gapLB\,dB difference between the lower bound and the achieved value. If $N$ doubles, the required
+transmit power falls by \dropA--\dropB\,dB for a user located near the IRS. This agrees with the
+6\,dB reduction for every doubling of $N$ predicted by the quadratic gain. In addition, if the channel
+between the AP and the IRS is a LoS channel, the algorithm reaches the optimum after one iteration. If
+2-bit phase shifters are used, there is a small penalty of only \lossTwo\,dB compared with continuous
+phase shifts (at $N=160$).
 
 \subsection{Difficulties encountered and how we addressed them}
 
-\textbf{Understanding the optimisation tools.} Semidefinite relaxation, lifting and Gaussian
-randomisation are outside our course. We first solved the cases $N=1$ and $N=2$ by hand, where the
-optimal phases are obvious, and used them to understand the general matrix formulation. A tutorial
-article on SDR~\cite{luo} was also helpful.
+\textbf{Optimisation concepts.} Semidefinite relaxation, lifting, and Gaussian randomisation were not
+covered in this course. To get an understanding of the general case, we considered $N=1$ and $N=2$ and
+found the obvious optimal phase shifts. We also found a useful tutorial~\cite{luo}.
 
-\textbf{Computation time.} Our first implementation used an interior-point solver and needed about
-10 seconds per channel realisation for $N=40$, while a smooth curve needs thousands of realisations.
-We changed to a first-order solver, which was more than ten times faster, ran the different user
-positions in parallel on separate processor cores, and used the SDP only in the experiments where the
-bound is needed. The closed-form schemes take a fraction of a millisecond per realisation.
+\textbf{Long run times.} An initial implementation of this code used an interior-point solver. In this
+case, for $N=40$, each realisation took around 10 seconds. As a smooth curve requires thousands of
+samples, this was very slow. Switching to a first-order solver (SCS) gave a speed increase of more than
+10 times. The different locations of the user were run in parallel across separate processor cores.
+Additionally, the SDP was only used in the experiments requiring bounds. The closed-form techniques
+only take a fraction of a millisecond per realisation.
 
-\textbf{Verifying the code.} A sign error in a phase or a missing conjugate still gives a
-plausible-looking curve. We therefore relied on three independent checks: the alternating optimisation
-must never fall below the SDR lower bound and should be close to it; the ``without IRS'' curve must
-agree with the value expected from the path-loss model; and the slope against $N$ must be 6\udB{} per
-doubling. The Hermitian-transpose conventions ($\hdv$ versus $\hdv^H$) caused several early mistakes
-that these checks exposed.
+\textbf{Verification.} Many errors, such as incorrect signs and missing complex conjugates, will still
+give a plausible-looking curve. Therefore, multiple checks were made. The alternating optimisation
+must never fall below the lower bound provided by SDR, and should be close to it. The no-IRS curve must
+match the expected value from the path-loss model. Finally, for a user near the IRS, the required power
+must fall by about 6\,dB for each doubling of $N$. The notation for Hermitian conjugation ($\hdv$ vs
+$\hdv^H$) caused many mistakes early in this project. These were found from the checks.
 
-\textbf{An unexpected result.} The three best schemes gave identical results to several decimal
-places, which looked like a programming error. Working through the algebra for a rank-one $\Gm$
-(Section~3.5) showed that this is the correct behaviour.
+\textbf{Unexpected result.} The top three techniques all produced identical results to many decimal
+places. However, by analysing algebraically the case of a rank-one $\Gm$
+(Section~\ref{sec:exp3}), this was found to be a correct result.
 
 \subsection{Limitations and future directions}
 \label{sec:limits}
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt]
-\item \textbf{Channel knowledge.} The paper, and our simulation, assume that all channels are known
-perfectly. A passive IRS cannot transmit or process pilots, so only the cascaded channel can be
-estimated, and the training overhead grows with $N$. Channel estimation is the main practical obstacle.
-\item \textbf{Ideal hardware.} Continuous, lossless phase shifts that are independent of the reflection
-amplitude are assumed. Real elements have a few discrete levels, some loss, and coupled amplitude and
-phase. Our fourth experiment addresses only the first of these.
-\item \textbf{Channel model.} The model is narrowband, far-field and single-cell. In a wideband OFDM
-system one set of phases must serve all subcarriers, and a very large surface may operate in the near
-field.
-\item \textbf{Range of the scaling law.} The $N^2$ gain appears only once the reflected link dominates
-the direct link, and it cannot continue without limit, since the surface cannot deliver more power
-than it intercepts.
-\item \textbf{Scope of our reproduction.} We reproduced the single-user results only. Simulating the
-multiuser algorithms of the paper is the natural next step.
+\item \textbf{Channel knowledge.} The channel knowledge assumed in this paper and in our simulation is
+perfect knowledge. However, in reality, the passive IRS cannot send or receive pilots, so only the
+cascaded channel can be estimated. Due to this, increasing the number of elements increases the
+training overhead significantly. Estimating the channel is one of the main practical issues with this
+design.
+\item \textbf{Ideal hardware.} It is assumed that the phase shifters can provide continuous phase
+shifts (with zero loss) independently of the amplitude of the reflection. In practice, however, there
+are limited discrete phase-shift levels, some losses, and coupled amplitude and phase. In the fourth
+experiment, only the first issue was considered.
+\item \textbf{Channel model.} The channel model assumes narrowband, far-field transmission in a single
+cell. In a wideband OFDM system, one set of phase shifts must be used for all sub-carriers. If a very
+large surface is used, it may be operating in the near-field region.
+\item \textbf{Scaling.} The $N^2$ gain from the IRS only appears once the reflected signal is stronger
+than the direct signal. The gain cannot be increased infinitely, as the surface cannot reflect more
+power than it intercepts.
+\item \textbf{Reproduction.} Only the single-user results were reproduced, apart from the comparison
+with an AF relay. Natural extensions would be to simulate that comparison and the multiuser algorithms
+described in this paper.
 \end{itemize}
 
-Later work has followed several of these directions: beamforming with discrete phase
-shifts~\cite{wu_discrete}, channel estimation methods with reduced overhead, multi-IRS and wideband
-designs, active and simultaneously transmitting-and-reflecting surfaces, and learning-based phase
-control. The joint design studied here remains the starting point for these.
+Extensions to this work have been made in multiple ways~\cite{wu_tutorial}: beamforming with discrete
+phase shifts~\cite{wu_discrete}, channel estimation with reduced training overhead, multiple-IRS
+systems, wideband systems, active surfaces, simultaneously transmitting and reflecting surfaces, and
+learning-based phase control have all been investigated. All of these build on joint designs such as
+the one in this paper.
 
 %=============================================================================
 \begin{thebibliography}{9}
