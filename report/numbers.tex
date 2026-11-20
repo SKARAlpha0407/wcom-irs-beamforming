@@ -6,7 +6,7 @@
 \newcommand{\nRand}{1000}
 \newcommand{\peakD}{40}
 \newcommand{\peakP}{8.3}
-\newcommand{\aoFifty}{-3.6}
+\newcommand{\aoFifty}{\ensuremath{-3.6}}
 \newcommand{\noIrsFifty}{14.8}
 \newcommand{\saveFifty}{18.4}
 \newcommand{\gapLB}{less than 0.01}
@@ -20,12 +20,12 @@
 \newcommand{\lossOne}{3.8}
 \newcommand{\lossTwo}{0.9}
 \newcommand{\aoNtwenty}{1.9}
-\newcommand{\aoNthirty}{-1.3}
-\newcommand{\aoNsixty}{-6.9}
+\newcommand{\aoNthirty}{\ensuremath{-1.3}}
+\newcommand{\aoNsixty}{\ensuremath{-6.9}}
 \newcommand{\paperNoIrs}{19.19}
 \newcommand{\paperNtwenty}{4.49}
 \newcommand{\paperNthirty}{1.49}
-\newcommand{\paperNsixty}{-4.06}
+\newcommand{\paperNsixty}{\ensuremath{-4.06}}
 \newcommand{\offNoIrs}{4.4}
 \newcommand{\offNtwenty}{2.6}
 \newcommand{\offNthirty}{2.8}
@@ -34,20 +34,25 @@
 \newcommand{\dropPaperFig}{5.5}
 \newcommand{\closedNoIrs}{14.7}
 \newcommand{\plNoIrs}{19.48}
-\newcommand{\offPl}{-0.29}
+\newcommand{\offPl}{\ensuremath{-0.29}}
+\newcommand{\gainLoS}{6.7}
+\newcommand{\gainRay}{4.9}
+\newcommand{\ciExpOne}{1.6}
+\newcommand{\ciExpOneRest}{0.7}
+\newcommand{\ciExpTwo}{0.25}
 \newcommand{\lossThree}{0.2}
 \newcommand{\tableDist}{%
 \begin{tabular}{lrrrrrr}
 \toprule
 Scheme & $d=15$\,m & $d=25$\,m & $d=35$\,m & $d=43$\,m & $d=47$\,m & $d=50$\,m \\
 \midrule
-Lower bound (SDR) & $-3.3$ & $3.7$ & $7.9$ & $7.7$ & $3.5$ & $-3.6$ \\
-SDR + randomisation & $-3.3$ & $3.7$ & $7.9$ & $7.7$ & $3.5$ & $-3.6$ \\
-Alternating optimisation & $-3.3$ & $3.7$ & $7.9$ & $7.7$ & $3.5$ & $-3.6$ \\
-AP--user MRT & $-3.3$ & $3.7$ & $8.2$ & $9.3$ & $7.6$ & $3.8$ \\
-AP--IRS MRT & $9.2$ & $12.1$ & $12.9$ & $9.4$ & $3.9$ & $-3.5$ \\
-Random phase shift & $-3.2$ & $4.1$ & $9.2$ & $12.4$ & $13.4$ & $12.0$ \\
-Without IRS & $-3.2$ & $4.1$ & $9.2$ & $12.5$ & $14.1$ & $14.8$ \\
+Lower bound (SDR) & $\ensuremath{-3.3}$ & $3.7$ & $7.9$ & $7.7$ & $3.5$ & $\ensuremath{-3.6}$ \\
+SDR + randomisation & $\ensuremath{-3.3}$ & $3.7$ & $7.9$ & $7.7$ & $3.5$ & $\ensuremath{-3.6}$ \\
+Alternating optimisation & $\ensuremath{-3.3}$ & $3.7$ & $7.9$ & $7.7$ & $3.5$ & $\ensuremath{-3.6}$ \\
+AP--user MRT & $\ensuremath{-3.3}$ & $3.7$ & $8.2$ & $9.3$ & $7.6$ & $3.8$ \\
+AP--IRS MRT & $9.2$ & $12.1$ & $12.9$ & $9.4$ & $3.9$ & $\ensuremath{-3.5}$ \\
+Random phase shift & $\ensuremath{-3.2}$ & $4.1$ & $9.2$ & $12.4$ & $13.4$ & $12.0$ \\
+Without IRS & $\ensuremath{-3.2}$ & $4.1$ & $9.2$ & $12.5$ & $14.1$ & $14.8$ \\
 \bottomrule
 \end{tabular}}
 \newcommand{\tableEnv}{%
@@ -61,7 +66,7 @@ CVXPY & 1.9.3 \\
 SCS (SDP solver) & 3.3.2 \\
 Matplotlib & 3.10.8 \\
 Solver settings & SCS via CVXPY, eps = 1e-5, default other settings \\
-Operating system & Darwin 25.5.0 (arm64) \\
+Operating system & macOS 27.2.1 (arm64) \\
 Processor & Apple M2, 8 cores \\
 Random seed & 2026 \\
 \bottomrule

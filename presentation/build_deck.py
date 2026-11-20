@@ -172,7 +172,7 @@ card(s, 0.6, 1.6, 3.9, 3.0, "1  Overview",
 card(s, 4.72, 1.6, 3.9, 3.0, "2  Solution",
      [("Problem formulation", {"bullet": True}),
       ("Semidefinite relaxation (SDR)", {"bullet": True}),
-      ("Alternating optimization", {"bullet": True}),
+      ("Alternating optimisation", {"bullet": True}),
       ("The N-squared power scaling law", {"bullet": True})], size=16, accent=NAVY)
 card(s, 8.84, 1.6, 3.9, 3.0, "3  Results",
      [("Our Python reproduction", {"bullet": True}),
@@ -216,7 +216,7 @@ card(s, 0.6, 1.6, 5.9, 2.25, "Why the problem matters", [
     ("Passive elements are cheap, thin and easy to mount on walls", {"bullet": True}),
     ("Lets the network shape the channel, not only adapt to it", {"bullet": True})], size=15)
 card(s, 0.6, 4.05, 5.9, 2.25, "Relevance of this paper", [
-    ("One of the first to optimize the AP and the IRS jointly", {"bullet": True}),
+    ("One of the first to optimise the AP and the IRS jointly", {"bullet": True}),
     ("Proves the N-squared power gain of an IRS", {"bullet": True}),
     ("Starting point for later work on RIS security, SWIPT, UAV, ISAC", {"bullet": True})],
      size=15, accent=NAVY)
@@ -255,7 +255,7 @@ s = new_slide("Problem formulation", M2,
               "second is that every IRS element has unit gain and only a phase. Explain why it is hard: "
               "w and theta multiply each other, and the unit-modulus constraint is non-convex.")
 eq(s, 0.6, 1.6, 7.0, 2.3, [
-    ("(P1)    minimize over w, θ      ||w||²", {"bold": True}),
+    ("(P1)    minimise over w, θ      ||w||²", {"bold": True}),
     "subject to    |(hᵣᴴ Θ G + h_dᴴ) w|²  ≥  γ σ²",
     "0 ≤ θₙ ≤ 2π,    n = 1, ..., N"], size=20)
 card(s, 8.0, 1.6, 4.7, 2.3, "Why it is hard", [
@@ -270,7 +270,7 @@ eq(s, 0.6, 5.65, 12.1, 0.95, [
     "w* = √P · (hᵣᴴΘG + h_dᴴ)ᴴ / ||hᵣᴴΘG + h_dᴴ||"
     "        ⇒        P = γσ² / ||hᵣᴴΘG + h_dᴴ||²"], size=18)
 text(s, 0.6, 6.6, 12.1, 0.4, [
-    "So the whole problem becomes: choose the phases that maximize the combined channel gain."],
+    "So the whole problem becomes: choose the phases that maximise the combined channel gain."],
      size=15, bold=True, color=TEAL)
 
 # ============================ 7. SDR =======================================
@@ -278,7 +278,7 @@ s = new_slide("Solution 1: semidefinite relaxation (SDR)", M2,
               "Write the phases as a vector v. The channel gain is a quadratic form in v. Lift to the "
               "matrix V = v v^H, which must be rank one. Drop the rank constraint and the problem is a "
               "convex SDP that a solver handles. Its optimum is an upper bound on the gain, so a lower "
-              "bound on power. Then recover a valid phase vector by Gaussian randomization.")
+              "bound on power. Then recover a valid phase vector by Gaussian randomisation.")
 text(s, 0.6, 1.5, 6.2, 5.0, [
     ("Stack the phases: v = [e^(jθ₁), ..., e^(jθ_N)]ᴴ, so vₙ = e^(−jθₙ) (the paper's convention). With Φ = diag(hᵣᴴ) G: hᵣᴴΘG = vᴴΦ.",
      {"bullet": True}),
@@ -288,11 +288,11 @@ text(s, 0.6, 1.5, 6.2, 5.0, [
     ("Relax: drop the rank-one constraint. What remains is a convex semidefinite program.",
      {"bullet": True, "bold": True, "color": NAVY}),
     ("Recover: draw random vectors from the SDP solution, project each onto unit modulus, keep the best "
-     "(Gaussian randomization).", {"bullet": True}),
+     "(Gaussian randomisation).", {"bullet": True}),
 ], size=17, space=9)
 eq(s, 7.1, 1.6, 5.6, 1.9, [
     ("Relaxed problem (convex SDP)", {"bold": True}),
-    "maximize   tr(R V)",
+    "maximise   tr(R V)",
     "subject to   Vₙₙ = 1,   V ⪰ 0"], size=18)
 card(s, 7.1, 3.75, 5.6, 1.25, "What it gives", [
     "A lower bound on the transmit power, and a near-optimal solution."], size=15)
@@ -300,7 +300,7 @@ card(s, 7.1, 5.2, 5.6, 1.25, "Cost", [
     "The matrix has (N+1)² entries, so it becomes slow for large N."], size=15, accent=RED)
 
 # ============================ 8. AO ========================================
-s = new_slide("Solution 2: alternating optimization", M2,
+s = new_slide("Solution 2: alternating optimisation", M2,
               "The low-complexity algorithm. Fix w, then each phase has a closed form: rotate reflected "
               "path n so it arrives in phase with the direct path. Fix the phases, then w is MRT. Repeat. "
               "Each step can only lower the power, so it converges.")
@@ -351,7 +351,7 @@ text(s, 0.6, 6.35, 12.1, 0.5, [
 s = new_slide("Our reproduction: simulation setup", M3,
               "We wrote the simulator from scratch in Python. NumPy for the channels and the closed-form "
               "algorithm, CVXPY with the SCS solver for the SDP. Each point is an average over many random "
-              "channel realizations. Mention the geometry: the user moves along a line from the AP towards "
+              "channel realisations. Mention the geometry: the user moves along a line from the AP towards "
               "the IRS.")
 rows = [("AP antennas, M", str(P["M"])),
         ("AP-IRS distance d₀, offset dᵥ", f"{P['d0']:.0f} m, {P['dv']:.0f} m"),
@@ -361,8 +361,8 @@ rows = [("AP antennas, M", str(P["M"])),
         ("Fading", "AP-IRS: LoS;  others: Rayleigh"),
         ("Noise power σ²", f"{P['noise_dBm']:.0f} dBm"),
         ("SNR target γ", f"{P['gamma_dB']:.0f} dB"),
-        ("Channel realizations", f"{P['realisations_sdr']} (Exp. 1, 3)  /  {P['realisations']} (Exp. 2, 4)"),
-        ("Gaussian randomizations", str(P["randomisations"]))]
+        ("Channel realisations", f"{P['realisations_sdr']} (Exp. 1, 3)  /  {P['realisations']} (Exp. 2, 4)"),
+        ("Gaussian randomisations", str(P["randomisations"]))]
 tbl = s.shapes.add_table(len(rows) + 1, 2, Inches(0.6), Inches(1.55), Inches(6.9), Inches(4.9)).table
 tbl.columns[0].width, tbl.columns[1].width = Inches(4.1), Inches(2.8)
 for r, (a, b) in enumerate([("Parameter", "Value")] + rows):
@@ -390,7 +390,7 @@ s = new_slide("Result 1: transmit power against user position", M3,
               "Three regions. Near the AP the direct link is strong and the IRS hardly matters. Around the "
               "middle the user is far from both and power peaks. Near the IRS the power falls again: the "
               "IRS creates a signal hotspot. Without the IRS, power only keeps rising. Point out that the "
-              "alternating optimization sits on top of the SDR lower bound, so it is effectively optimal "
+              "alternating optimisation sits on top of the SDR lower bound, so it is effectively optimal "
               "here, and that each single-beam heuristic only works in one region.")
 picture(s, "fig1_power_vs_distance.png", 0.5, 1.4, h=5.45)
 text(s, 8.3, 1.5, 4.5, 5.3, [
@@ -427,7 +427,7 @@ text(s, 8.3, 1.5, 4.5, 5.3, [
 # ============================ 13. Results 3 and 4 ==========================
 kL, kR, kY = "LoS (K = inf)", "Rician (K = 10 dB)", "Rayleigh (K = 0)"
 s = new_slide("Results 3 and 4: convergence and phase resolution", M3,
-              "Left: the alternating optimization converges in very few iterations. With a pure line-of-"
+              "Left: the alternating optimisation converges in very few iterations. With a pure line-of-"
               "sight AP-IRS link it is already optimal after one iteration, which we can also prove: the "
               "channel G is rank one, so the phases only enter through one complex number. Right is our "
               "own extension beyond the paper: real IRS elements have only a few phase levels. Two bits "

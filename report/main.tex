@@ -14,6 +14,7 @@
 \usepackage{enumitem}
 \usepackage{xcolor}
 \usepackage{listings}
+\usepackage{cite}
 \usepackage[hidelinks]{hyperref}
 
 \graphicspath{{figures/}}
@@ -24,7 +25,8 @@
 \lstset{language=Python,basicstyle=\ttfamily\scriptsize,breaklines=true,
   keywordstyle=\color{blue!60!black},commentstyle=\color{green!40!black},
   stringstyle=\color{red!60!black},numbers=left,numberstyle=\tiny\color{gray},
-  frame=single,framerule=0.3pt,columns=fullflexible}
+  frame=single,framerule=0.3pt,columns=fullflexible,
+  showstringspaces=false}
 
 % Shorthand
 \newcommand{\hrv}{\bm{h}_r}
@@ -98,13 +100,13 @@ radio-frequency (RF) chains at the AP, or using relays and additional base stati
 these solutions either need more transmit power or add more active hardware, and therefore increase
 energy consumption.
 
-This paper~\cite{wu} studies a network aided by an \emph{Intelligent Reflecting Surface} (IRS) and
+The paper by Wu and Zhang~\cite{wu} studies a network aided by an \emph{Intelligent Reflecting Surface} (IRS) and
 proposes how to configure it together with the AP. The IRS consists of $N$ passive elements. These
 elements can reflect the incident wave, with a phase shift set by a controller attached to the IRS. It
 needs no transmit RF chains or amplifiers. Careful selection of phase shifts for each element makes the
 reflected waves add constructively with the direct signal from the AP at the user.
 
-In this paper, it is considered that there are $K$ single-antenna users being served in the downlink
+In the paper, it is considered that there are $K$ single-antenna users being served in the downlink
 by an AP with $M$ antennas, aided by one IRS. Each user requires a certain signal-to-interference-plus-noise
 ratio (SINR). The question is: \textbf{How should the active beamforming vectors at the AP and phase
 shifts at the IRS be designed to minimise the total transmit power from the AP?} Our simulations focus
@@ -123,14 +125,14 @@ the problem non-convex, so it cannot be solved directly by standard convex optim
 antennas, wider bandwidths, and more sites. In turn, the energy consumed increases. As the IRS has no
 transmit power consumption of its own~\cite{wu}, it would be beneficial to use in energy-efficient 6G
 networks.
-\item \textbf{Cost efficiency.} Fully digital massive MIMO systems require one RF chain to be included
+\item \textbf{Cost efficiency.} Fully digital massive multiple-input multiple-output (MIMO) systems require one RF chain to be included
 per antenna. However, only a tunable element (such as a PIN diode/varactor) is required for each
 element within the IRS. Hence, having hundreds of elements within an IRS is feasible.
 \item \textbf{Controllable channel.} Traditionally, the channel within a communication system is
 uncontrollable, and the transmitter/receiver must adapt to it. However, with an IRS, partial control
-can be applied to the channel. This paper shows how large the resulting gain can be (the $N^2$ power
+can be applied to the channel. The paper shows how large the resulting gain can be (the $N^2$ power
 scaling law) and gives algorithms to calculate the correct configuration.
-\item \textbf{No noise amplification.} Amplify-and-forward relays amplify their own receiver noise
+\item \textbf{No noise amplification.} Amplify-and-forward (AF) relays amplify their own receiver noise
 along with the signal. In half-duplex mode, they also need two time slots, which makes them less
 spectrally efficient. However, the IRS operates in full-duplex and does not amplify noise~\cite{wu}.
 (The paper also shows that a full-duplex relay can still perform better when $N$ is small.)
@@ -138,29 +140,29 @@ spectrally efficient. However, the IRS operates in full-duplex and does not ampl
 
 \subsection{Why we selected this problem}
 
-There were three main reasons for choosing this paper.
+There were three main reasons for choosing the paper.
 
 It relates directly to concepts we have covered in the course. Path loss and fading models have been
 discussed (Unit~II). In the single-user case, the optimal beamforming vector for transmission is
 maximum ratio transmission~\cite{tse,goldsmith}, which corresponds to maximum ratio combining at
 reception (covered in diversity, Unit~III). Comparing large antenna arrays relates to MIMO systems and
 massive MIMO (Unit~IV). Therefore, we were able to understand most of the paper with the tools we had
-already, whilst still learning a new tool (semidefinite relaxation).
+already, whilst still learning a new tool, semidefinite relaxation (SDR).
 
 The solution has an intuitive interpretation. Despite the complex optimisation methods, the single-user
 result is simply to rotate each reflected path so that it arrives in phase with the direct path. This
 means the results are easily interpretable.
 
 The main single-user results of the paper can be simulated on a laptop. Therefore, we were able to
-reproduce them and check the trends against the paper; the differences in absolute values are discussed
-in Section~\ref{sec:diff}.
+reproduce its Fig.~3 and, in part, its Fig.~4, and check the trends against the paper; the differences
+in absolute values are discussed in Section~\ref{sec:diff}.
 
 \subsection{Importance and relevance}
 
-This paper was among the first to consider the joint optimisation of the AP transmit beamforming and
-the IRS phase shifts~\cite{wu}. It presented a key algorithmic framework, alternating optimisation with
+The paper~\cite{wu} was among the first to consider the joint optimisation of the AP transmit beamforming and
+the IRS phase shifts. It presented a key algorithmic framework, alternating optimisation with
 SDR providing a performance bound, which has since been applied to different scenarios with IRS, such
-as secure communications, wireless power transfer, UAV communications and integrated
+as secure communications, wireless power transfer, unmanned aerial vehicle (UAV) communications and integrated
 sensing~\cite{wu_mag,wu_tutorial}. Moreover, it showed that, as $N$ grows large, the received signal power can
 scale up with $N^2$, i.e., significantly faster than the order-$N$ gain of an $N$-antenna active array
 such as massive MIMO~\cite{wu}. This motivates the deployment of large passive reflecting surfaces.
@@ -210,7 +212,7 @@ For an SNR target $\gamma$, the design problem is
 \begin{align}
 \text{(P1)}\qquad \min_{\wv,\,\bm{\theta}}\quad & \|\wv\|^2 \nonumber\\
 \text{s.t.}\quad & \left|\left(\hrv^H\Thm\Gm+\hdv^H\right)\wv\right|^2 \ge \gamma\sigma^2, \label{eq:p1}\\
-& 0\le\theta_n\le 2\pi,\quad n=1,\dots,N. \nonumber
+& \theta_n\in[0,2\pi),\quad n=1,\dots,N. \nonumber
 \end{align}
 The problem is non-convex because $\wv$ and $\Thm$ appear as a product in the constraint and because the
 entries of $\Thm$ are restricted to the unit circle.
@@ -231,7 +233,7 @@ channel so that all contributions add in phase. Substituting \eqref{eq:mrt} into
 and leaves a problem in the phases only,
 \begin{equation}
 \text{(P2)}\qquad \max_{\bm{\theta}}\ \left\|\hrv^H\Thm\Gm+\hdv^H\right\|^2
-\quad\text{s.t.}\quad 0\le\theta_n\le2\pi .
+\quad\text{s.t.}\quad \theta_n\in[0,2\pi),\ \forall n.
 \label{eq:p2}
 \end{equation}
 Minimising the transmit power is therefore the same as maximising the gain of the combined channel.
@@ -281,7 +283,7 @@ grows quickly with $N$.
 
 \subsection{Step 2b: alternating optimisation}
 
-To avoid the SDP, the paper proposes a low-complexity algorithm~\cite[Sec.~III-B]{wu} that alternates between the two sets of
+To avoid the SDP, the paper proposes a low-complexity alternating optimisation (AO) algorithm~\cite[Sec.~III-B]{wu} that alternates between the two sets of
 variables.
 
 \textbf{Phases for a fixed beamformer.} For a fixed $\wv$, the received amplitude is
@@ -323,9 +325,17 @@ target the required transmit power therefore falls as $1/N^2$, that is, by $20\l
 each time $N$ is doubled. An active array of $N$ antennas with the same total transmit power gives a
 gain of only $N$, or $3\udB$ per doubling.
 
+The paper also compares the IRS with an amplify-and-forward relay that has $N$ active
+antennas~\cite[Sec.~III-D, Prop.~3]{wu}. The relay's SNR grows only in proportion to $N$, but the relay
+amplifies the signal, so for small $N$ it performs better. In the paper's example (its Fig.~5, without
+the direct link and with the same 5\,mW power budget), the IRS overtakes a half-duplex relay at about
+$N=235$ and a full-duplex relay only at about $N=1260$; doubling $N$ from 400 to 800 adds about
+2\,bps/Hz with the IRS against 1\,bps/Hz with the full-duplex relay. We did not reproduce this
+comparison.
+
 \subsection{Extension to several users}
 
-In this case, $K$ users were considered~\cite[Sec.~IV]{wu}. As there are multiple users, interference
+In the multiuser case, $K$ users are considered~\cite[Sec.~IV]{wu}. As there are multiple users, interference
 from the other users' beams is present, and therefore the SINR constraint for each user includes this
 interference. The same alternating method is used to solve it, but given a set of phases, the transmit
 beamformers are found by solving a standard second-order cone programme (SOCP), whose solution is
@@ -341,6 +351,7 @@ were only performed for the single-user case (Section~\ref{sec:limits}).
 %=============================================================================
 
 \subsection{Methodology}
+\label{sec:method}
 
 The simulator was written in Python (Appendix~\ref{app:code}). NumPy was used to generate the channels
 and implement the closed-form methods. CVXPY (with the SCS solver) was used to solve the
@@ -428,7 +439,9 @@ the IRS ($d=50$\,m), and Table~\ref{tab:dist} gives the numbers at selected posi
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.74\linewidth]{fig1_power_vs_distance.pdf}
-\caption{AP transmit power versus AP--user horizontal distance.}
+\caption{AP transmit power versus AP--user horizontal distance ($M=\Msim$, $N=\Nsim$,
+$\gamma=10$\,dB). The lower bound, SDR with randomisation and alternating optimisation coincide; the
+dashed lower bound is drawn on top of the other two.}
 \label{fig:dist}
 \end{figure}
 
@@ -438,6 +451,11 @@ the IRS ($d=50$\,m), and Table~\ref{tab:dist} gives the numbers at selected posi
 \label{tab:dist}
 \tableDist
 \end{table}
+
+With \nSdr{} realisations per point, the 95\% confidence half-width of the averages in
+Fig.~\ref{fig:dist} is at most \ciExpOneRest\,dB, except for AP--IRS MRT near the AP (up to
+\ciExpOne\,dB), where a few channels with a weak direct link dominate the average. Differences between
+schemes are measured on the same channels and are much more precise than this.
 
 The curves can be read in three regions.
 
@@ -451,8 +469,8 @@ from a path-loss exponent of 3.5. With the IRS the power also rises at first, re
 
 \emph{Near the IRS.} The reflected link now dominates. At $d=50$\,m the jointly optimised system needs
 \aoFifty\udBm{} against \noIrsFifty\udBm{} without the IRS, a saving of \saveFifty\udB. The IRS thus
-creates a ``signal hotspot'' around itself, and a user at the cell edge can be served with less power
-than a user in the middle of the cell.
+creates a ``signal hotspot'' around itself: a user next to the IRS, far from the AP, can be served
+with less power than a user midway between the AP and the IRS.
 
 The comparison between schemes is also instructive.
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt]
@@ -476,17 +494,21 @@ Figure~\ref{fig:N} tests the scaling law \eqref{eq:n2} for three user positions.
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.74\linewidth]{fig2_power_vs_N.pdf}
-\caption{AP transmit power versus the number of IRS elements. The dashed line has the slope of the
-$1/N^2$ law.}
+\caption{AP transmit power versus the number of IRS elements ($M=\Msim$, $\gamma=10$\,dB). The dashed
+line has the slope of the $1/N^2$ law.}
 \label{fig:N}
 \end{figure}
 
 For the user next to the IRS ($d=50$\,m) the curve approaches the dashed $N^{-2}$ reference as $N$ grows
 and is parallel to it from about $N=40$ (for small $N$ the direct link still contributes).
 Increasing $N$ from 40 to 80 reduces the power by \dropA\udB, and from 80 to 160 by \dropB\udB, against
-the theoretical 6.0\udB{} per doubling. This confirms the squared power gain. It is worth noting that
+the theoretical 6.0\udB{} per doubling. This is consistent with the squared power gain; the small
+shortfall comes from the direct link, which still contributes at these values of $N$. It is worth noting that
 the law holds here even though the direct link is present and $M>1$, which are not covered by the
 simplified derivation: near the IRS the reflected link is simply much stronger than the direct one.
+
+With \nReal{} realisations per point, the 95\% confidence half-width of every average in
+Fig.~\ref{fig:N} is at most \ciExpTwo\,dB.
 
 For the user near the AP ($d=15$\,m) the power changes by only \dropFifteen\udB{} over the whole range
 of $N$, because the direct link dominates and the IRS is far away. The user at $d=41$\,m lies between
@@ -499,14 +521,15 @@ AP, and its size must be large enough for the reflected link to overtake the dir
 
 Figure~\ref{fig:conv} shows the transmit power after each iteration of the alternating optimisation
 for a user at $d=45$\,m, together with the SDR lower bound. Iteration~0 is the starting point,
-AP--user MRT. To see how the channel affects convergence we varied the Rician factor $K$ of the
+AP--user MRT. (The three starting values differ because each curve uses a different set of random
+channels and a different AP--IRS channel model.) To see how the channel affects convergence we varied the Rician factor $K$ of the
 AP--IRS link from pure LoS ($K=\infty$) to Rayleigh ($K=0$).
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.72\linewidth]{fig3_convergence.pdf}
-\caption{Convergence of the alternating optimisation for different AP--IRS channels. Dashed lines:
-SDR lower bounds.}
+\caption{Convergence of the alternating optimisation for different AP--IRS channels ($M=\Msim$,
+$N=\Nsim$, $d=45$\,m). Dashed lines: SDR lower bounds.}
 \label{fig:conv}
 \end{figure}
 
@@ -526,8 +549,8 @@ Fig.~\ref{fig:dist}.
 
 When the AP--IRS channel has a scattered component, more iterations are needed, but convergence is
 still fast: for the Rayleigh case the power after six iterations is within \gapRay\udB{} of the lower
-bound. The gain of the IRS is also smaller in that case (at $d=45$\,m about 4.4\,dB against 6.6\,dB with a LoS
-link, compared with no IRS), because a full-rank random $\Gm$ does not
+bound. The gain of the IRS over the case without IRS, measured on the same channels, is also smaller in that
+case (\gainRay\,dB against \gainLoS\,dB with a LoS link), because a full-rank random $\Gm$ does not
 let the $N$ reflections be aligned for all AP antennas at once. This supports the usual advice to
 place the IRS in line of sight of the AP.
 
@@ -540,7 +563,7 @@ an addition of our own we quantised the optimised phases to $b$ bits and recompu
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.72\linewidth]{fig4_discrete_phase.pdf}
-\caption{Effect of phase quantisation for a user at $d=50$\,m.}
+\caption{Effect of phase quantisation for a user at $d=50$\,m ($M=\Msim$).}
 \label{fig:disc}
 \end{figure}
 
@@ -590,7 +613,8 @@ Saving from doubling $N$ (30 to 60), in dB & $\dropPaperFig$ & $\dropPaper$ & \\
 \end{table}
 
 The saving from doubling $N$ is the same in both, so the $N^2$ scaling is reproduced exactly; only
-the absolute levels differ. The extracted data show that the difference has two separate parts.
+the absolute levels differ. (The text of~\cite{wu} rounds its two plotted values, $\paperNthirty$ and
+$\paperNsixty$\,dBm, to 2 and $-4$\,dBm and quotes a saving of about 6\,dB.) The extracted data show that the difference has two separate parts.
 
 \textbf{Direct link (without IRS).} For an $M$-antenna Rayleigh channel with path loss $L$,
 $\|\hdv\|^2/L$ follows a Gamma$(M,1)$ distribution, so the average power is
@@ -617,7 +641,8 @@ The remaining differences between our model and the paper's are smaller:
 \item \textbf{Number of elements in the distance sweep.} The text of~\cite{wu} does not state $N$ for
 its Fig.~3, but the extracted data settle it: at $d=50$\,m every scheme in Fig.~3 matches Fig.~4(a) at
 $N=20$ (for example, the joint design needs \paperNtwenty\,dBm in both, against \paperNthirty\,dBm at
-$N=30$). Our Experiment~1 uses $N=\Nsim$, so it is not directly comparable with the paper's Fig.~3; at
+$N=30$). The largest difference between the two figures is 0.45\,dB, for AP--user MRT, which is
+consistent with separate Monte Carlo runs. Our Experiment~1 uses $N=\Nsim$, so it is not directly comparable with the paper's Fig.~3; at
 $N=20$ our joint design needs \aoNtwenty\,dBm at $d=50$\,m.
 \item \textbf{An inconsistency within the paper.} The ``without IRS'' value in the paper's Fig.~4(c)
 ($d=15$\,m) is 2.23\,dBm, whereas the rule that fits Fig.~3 and Fig.~4(a,b) predicts 1.01\,dBm. Under
@@ -680,7 +705,7 @@ must never fall below the lower bound provided by SDR, and should be close to it
 match the expected value from the path-loss model. Finally, for a user near the IRS, the required power
 must fall by about 6\,dB for each doubling of $N$. The lower-bound check exposed a real problem: when the closed-form schemes were first averaged over
 more channel realisations than the bound, they appeared up to 0.3\,dB below it, which led to the
-matched-sample design described in Section~3.1. A reviewer also found that the definition of the
+matched-sample design described in Section~\ref{sec:method}. A reviewer also found that the definition of the
 phase vector $\vvec$ in our report did not match the code (one used the conjugate of the other);
 the convention is now stated explicitly in \eqref{eq:vdef}.
 
@@ -692,7 +717,7 @@ places. However, by analysing algebraically the case of a rank-one $\Gm$
 \label{sec:limits}
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt]
-\item \textbf{Channel knowledge.} The channel knowledge assumed in this paper and in our simulation is
+\item \textbf{Channel knowledge.} The channel knowledge assumed in the paper and in our simulation is
 perfect knowledge. However, in reality, the passive IRS cannot send or receive pilots, so only the
 cascaded channel can be estimated. Due to this, increasing the number of elements increases the
 training overhead significantly. Estimating the channel is one of the main practical issues with this
@@ -702,21 +727,22 @@ shifts (with zero loss) independently of the amplitude of the reflection. In pra
 are limited discrete phase-shift levels, some losses, and coupled amplitude and phase. In the fourth
 experiment, only the first issue was considered.
 \item \textbf{Channel model.} The channel model assumes narrowband, far-field transmission in a single
-cell. In a wideband OFDM system, one set of phase shifts must be used for all sub-carriers. If a very
+cell. In a wideband orthogonal frequency-division multiplexing (OFDM) system, one set of phase shifts must be used for all sub-carriers. If a very
 large surface is used, it may be operating in the near-field region.
 \item \textbf{Scaling.} The $N^2$ gain from the IRS only appears once the reflected signal is stronger
 than the direct signal. The gain cannot be increased infinitely, as the surface cannot reflect more
 power than it intercepts.
 \item \textbf{Reproduction.} Only the single-user results were reproduced, apart from the comparison
 with an AF relay. Natural extensions would be to simulate that comparison and the multiuser algorithms
-described in this paper.
+described in the paper.
 \end{itemize}
 
 Extensions to this work have been made in multiple ways~\cite{wu_tutorial}: beamforming with discrete
 phase shifts~\cite{wu_discrete}, channel estimation with reduced training overhead, multiple-IRS
-systems, wideband systems, active surfaces, simultaneously transmitting and reflecting surfaces, and
-learning-based phase control have all been investigated. All of these build on joint designs such as
-the one in this paper.
+systems, wideband systems and learning-based phase control have all been investigated. Newer surface
+designs include active surfaces with amplifying elements~\cite{zhang_active} and simultaneously
+transmitting and reflecting surfaces~\cite{liu_star}. All of these build on joint designs such as the
+one in~\cite{wu}.
 
 %=============================================================================
 \begin{thebibliography}{9}
@@ -732,6 +758,12 @@ pp.~3313--3351, May 2021.
 \bibitem{wu_discrete} Q.~Wu and R.~Zhang, ``Beamforming optimization for wireless network aided by
 intelligent reflecting surface with discrete phase shifts,'' \emph{IEEE Trans. Commun.}, vol.~68,
 no.~3, pp.~1838--1851, Mar. 2020.
+\bibitem{zhang_active} Z.~Zhang, L.~Dai, X.~Chen, C.~Liu, F.~Yang, R.~Schober, and H.~V.~Poor,
+``Active RIS vs. passive RIS: Which will prevail in 6G?,'' \emph{IEEE Trans. Commun.}, vol.~71, no.~3,
+pp.~1707--1725, Mar. 2023.
+\bibitem{liu_star} Y.~Liu, X.~Mu, J.~Xu, R.~Schober, Y.~Hao, H.~V.~Poor, and L.~Hanzo, ``STAR:
+Simultaneous transmission and reflection for 360$^\circ$ coverage by intelligent surfaces,''
+\emph{IEEE Wireless Commun.}, vol.~28, no.~6, pp.~102--109, Dec. 2021.
 \bibitem{luo} Z.-Q.~Luo, W.-K.~Ma, A.~M.-C.~So, Y.~Ye, and S.~Zhang, ``Semidefinite relaxation of
 quadratic optimization problems,'' \emph{IEEE Signal Process. Mag.}, vol.~27, no.~3, pp.~20--34,
 May 2010.

@@ -6,7 +6,7 @@ Reproduction of the single-user results of
 System: M-antenna AP -> single-antenna user, helped by an N-element IRS.
 Goal:   minimise AP transmit power subject to a receive-SNR target gamma.
 
-Run:    python ris_sim.py            (full run, a few minutes on 8 cores)
+Run:    python ris_sim.py            (full run, about 15 minutes on 8 cores)
         python ris_sim.py --quick    (small run for a smoke test)
 Output: ../figures/*.png|pdf and ../figures/results.json
 
@@ -30,7 +30,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # ----------------------------------------------------------------------------
-# Simulation parameters (see Table I of the report)
+# Simulation parameters (see Table 2 of the report)
 # ----------------------------------------------------------------------------
 M = 4                 # AP antennas
 D0 = 51.0             # AP-IRS distance [m]
@@ -114,7 +114,8 @@ def quantise(v, bits):
 
 
 def alternating_opt(Phi, hd, return_trace=False):
-    """Algorithm 1 of the paper: alternate between MRT and phase alignment."""
+    """Single-user alternating optimisation of [1, Sec. III-B]: alternate between
+    MRT at the AP and closed-form phase alignment at the IRS."""
     w = hd.conj() / np.linalg.norm(hd)          # initialise with AP-user MRT
     v = align_phases(Phi, hd, w)
     trace = [GAMMA * SIGMA2 / abs((v.conj() @ Phi + hd) @ w) ** 2]   # iteration 0
@@ -197,14 +198,19 @@ def average(rng, N, d, n_real, **kw):
     for _ in range(n_real):
         for k, p in one_realisation(rng, N, d, **kw).items():
             acc.setdefault(k, []).append(p)
-    return {k: float(to_dbm(np.mean(v))) for k, v in acc.items()}
+    out = {k: float(to_dbm(np.mean(v))) for k, v in acc.items()}
+    # 95% confidence half-width of each mean, in dB (normal approximation)
+    out["_ci95_dB"] = {k: float(10 * np.log10(1 + 1.96 * np.std(v, ddof=1)
+                                              / (np.mean(v) * np.sqrt(len(v)))))
+                       for k, v in acc.items()}
+    return out
 
 
 def convergence(seed, N, d, k_ai, n_real, n_sdr, n_it):
-    """Average power after each AO iteration (n_real channels) and the average
-    SDR lower bound (the first n_sdr of those channels)."""
+    """Average power after each AO iteration (n_real channels), the average
+    SDR lower bound and the no-IRS power (the first n_sdr of those channels)."""
     rng = np.random.default_rng(seed)
-    tr, lb = np.zeros(n_it + 1), 0.0
+    tr, lb, no_irs = np.zeros(n_it + 1), 0.0, 0.0
     for i in range(n_real):
         G, hr, hd = gen_channels(rng, N, d, k_ai)
         Phi = hr[:, None] * G
@@ -213,7 +219,9 @@ def convergence(seed, N, d, k_ai, n_real, n_sdr, n_it):
         tr += np.array(t[:n_it + 1])
         if i < n_sdr:
             lb += sdr(Phi, hd, rng)[0]
-    return to_dbm(tr / n_real).tolist(), float(to_dbm(lb / n_sdr))
+            no_irs += GAMMA * SIGMA2 / np.linalg.norm(hd) ** 2
+    return (to_dbm(tr / n_real).tolist(), float(to_dbm(lb / n_sdr)),
+            float(to_dbm(no_irs / n_sdr)))
 
 
 def environment():
@@ -234,9 +242,18 @@ def environment():
         pass
     return {"python": platform.python_version(), "numpy": np.__version__,
             "cvxpy": cp.__version__, "scs": scs_v, "matplotlib": mpl.__version__,
-            "os": f"{platform.system()} {platform.release()} ({platform.machine()})",
+            "os": (f"macOS {platform.mac_ver()[0]} ({platform.machine()})" if platform.mac_ver()[0]
+                   else f"{platform.system()} {platform.release()} ({platform.machine()})"),
             "cpu": f"{cpu}, {os.cpu_count()} cores",
             "solver": "SCS via CVXPY, eps = 1e-5, default other settings"}
+
+
+LABEL = {   # labels shown in the figures (British spelling, as in the report)
+    "SDR + randomization": "SDR + randomisation",
+    "Alternating optimization": "Alternating optimisation (AO)",
+    "AP-user MRT": "AP\u2013user MRT",
+    "AP-IRS MRT": "AP\u2013IRS MRT",
+}
 
 
 STYLE = {
@@ -274,7 +291,8 @@ def main():
                               realisations=n_real, realisations_sdr=n_sdr, randomisations=N_RAND,
                               seed=args.seed)}
     results["environment"] = environment()
-    plt.rcParams.update({"font.size": 11, "axes.grid": True, "grid.alpha": 0.4})
+    plt.rcParams.update({"font.size": 13, "legend.fontsize": 10.5, "axes.grid": True,
+                         "grid.alpha": 0.4, "font.family": "serif", "mathtext.fontset": "cm"})
 
     # ---- Experiment 1: transmit power vs AP-user horizontal distance -------
     t0 = time.time()
@@ -287,13 +305,14 @@ def main():
     # bound; otherwise sampling noise can put a scheme "below" the bound.
     res1 = res_sdp
     results["exp1_power_vs_distance"] = {"N": N1, "d": d_grid, "curves": {
-        k: [r[k] for r in res1] for k in STYLE}}
+        k: [r[k] for r in res1] for k in STYLE}, "ci95_dB": {
+        k: [r["_ci95_dB"][k] for r in res1] for k in STYLE}}
     fig, ax = plt.subplots(figsize=(6.4, 4.6))
     for k, st in STYLE.items():
-        ax.plot(d_grid, [r[k] for r in res1], label=k, lw=1.5, **st)
-    ax.set_xlabel("AP-user horizontal distance, d (m)")
+        top = dict(zorder=5, lw=2.2) if k == "Lower bound (SDR)" else dict(lw=1.5)
+        ax.plot(d_grid, [r[k] for r in res1], label=LABEL.get(k, k), **top, **st)
+    ax.set_xlabel("AP\u2013user horizontal distance, d (m)")
     ax.set_ylabel("AP transmit power (dBm)")
-    ax.set_title(f"M = {M}, N = {N1}, SNR target = {GAMMA_DB:.0f} dB")
     ax.legend(fontsize=8.5)
     save(fig, outdir, "fig1_power_vs_distance")
     print(f"exp1 done in {time.time() - t0:.0f}s")
@@ -306,6 +325,9 @@ def main():
             for d in d_list}
     results["exp2_power_vs_N"] = {"N": N_grid, "curves": {
         f"d={d}": {k: [r[k] for r in res2[d]]
+                   for k in ("Alternating optimization", "Without IRS")}
+        for d in d_list}, "ci95_dB": {
+        f"d={d}": {k: [r["_ci95_dB"][k] for r in res2[d]]
                    for k in ("Alternating optimization", "Without IRS")}
         for d in d_list}}
     fig, ax = plt.subplots(figsize=(6.4, 4.6))
@@ -324,7 +346,6 @@ def main():
     ax.minorticks_off()
     ax.set_xlabel("Number of IRS elements, N")
     ax.set_ylabel("AP transmit power (dBm)")
-    ax.set_title(f"M = {M}, SNR target = {GAMMA_DB:.0f} dB")
     ax.legend(fontsize=8)
     save(fig, outdir, "fig2_power_vs_N")
     print(f"exp2 done in {time.time() - t0:.0f}s")
@@ -340,15 +361,14 @@ def main():
         res3 = pool.starmap(convergence, [(sd, N1, d3, k, n_sdr, n_sdr, n_it)
                                           for sd, k in zip(seeds, k_list)])
     results["exp3_convergence"] = {"N": N1, "d": d3, "curves": {
-        k_name[k]: {"AO": r[0], "lower_bound": r[1]} for k, r in zip(k_list, res3)}}
+        k_name[k]: {"AO": r[0], "lower_bound": r[1], "no_irs": r[2]} for k, r in zip(k_list, res3)}}
     fig, ax = plt.subplots(figsize=(6.4, 4.4))
     for k, r, c in zip(k_list, res3, ["tab:blue", "tab:orange", "tab:green"]):
-        ax.plot(range(n_it + 1), r[0], marker="o", color=c, label="AO, " + k_name[k])
+        ax.plot(range(n_it + 1), r[0], marker="o", color=c, label="AO, " + k_name[k].replace("inf", "\u221e"))
         ax.axhline(r[1], color=c, ls="--", lw=1)
     ax.plot([], [], "k--", lw=1, label="SDR lower bound (same colour)")
-    ax.set_xlabel("Alternating-optimization iteration (0 = AP-user MRT start)")
+    ax.set_xlabel("Iteration (0 = AP\u2013user MRT start)")
     ax.set_ylabel("AP transmit power (dBm)")
-    ax.set_title(f"Convergence of Algorithm 1 (M = {M}, N = {N1}, d = {d3} m)")
     ax.legend(fontsize=9)
     save(fig, outdir, "fig3_convergence")
     print(f"exp3 done in {time.time() - t0:.0f}s")
@@ -371,7 +391,6 @@ def main():
     ax.minorticks_off()
     ax.set_xlabel("Number of IRS elements, N")
     ax.set_ylabel("AP transmit power (dBm)")
-    ax.set_title(f"Effect of phase quantization (d = 50 m, M = {M})")
     ax.legend(fontsize=9)
     save(fig, outdir, "fig4_discrete_phase")
     print(f"exp4 done in {time.time() - t0:.0f}s")

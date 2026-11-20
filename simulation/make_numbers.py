@@ -36,7 +36,10 @@ PAPER = {"noirs50": 19.19, "n20": 4.49, "n30": 1.49, "n60": -4.06}
 
 def f(x, nd=1):
     s = f"{x:.{nd}f}"
-    return "0.0" if s == "-0.0" else s
+    if float(s) == 0:
+        return f"{0:.{nd}f}"
+    # \\ensuremath gives a proper minus sign both in text and inside $...$
+    return "\\ensuremath{" + s + "}" if s.startswith("-") else s
 
 
 def small(x):
@@ -82,6 +85,11 @@ m = {
     "closedNoIrs": f(no_irs_closed),
     "plNoIrs": f(no_irs_pl, 2),
     "offPl": f(PAPER["noirs50"] - no_irs_pl, 2),
+    "gainLoS": f(e3["LoS (K = inf)"]["no_irs"] - e3["LoS (K = inf)"]["AO"][-1]),
+    "gainRay": f(ray["no_irs"] - ray["AO"][-1]),
+    "ciExpOne": f(max(e1["ci95_dB"]["AP-IRS MRT"]), 1),
+    "ciExpOneRest": f(max(max(v) for k, v in e1["ci95_dB"].items() if k != "AP-IRS MRT"), 1),
+    "ciExpTwo": f(max(max(v) for dd in e2["ci95_dB"].values() for v in dd.values()), 2),
     "lossThree": f(e4["3-bit phase shifters"][-1] - e4["Alternating optimization"][-1]),
 }
 
