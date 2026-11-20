@@ -442,7 +442,8 @@ the IRS ($d=50$\,m), and Table~\ref{tab:dist} gives the numbers at selected posi
 The curves can be read in three regions.
 
 \emph{Near the AP.} The direct link is strong and the reflected link is weak, because the user is far
-from the IRS. All schemes need almost the same power and the IRS brings little.
+from the IRS. All schemes except AP--IRS MRT need almost the same power, and the IRS brings little. AP--IRS MRT is
+the exception because it points the beam away from the user (see below).
 
 \emph{Between the AP and the IRS.} Without the IRS the power rises steadily with distance, as expected
 from a path-loss exponent of 3.5. With the IRS the power also rises at first, reaches a maximum of
@@ -480,7 +481,8 @@ $1/N^2$ law.}
 \label{fig:N}
 \end{figure}
 
-For the user next to the IRS ($d=50$\,m) the curve is parallel to the dashed $N^{-2}$ reference.
+For the user next to the IRS ($d=50$\,m) the curve approaches the dashed $N^{-2}$ reference as $N$ grows
+and is parallel to it from about $N=40$ (for small $N$ the direct link still contributes).
 Increasing $N$ from 40 to 80 reduces the power by \dropA\udB, and from 80 to 160 by \dropB\udB, against
 the theoretical 6.0\udB{} per doubling. This confirms the squared power gain. It is worth noting that
 the law holds here even though the direct link is present and $M>1$, which are not covered by the
@@ -524,7 +526,8 @@ Fig.~\ref{fig:dist}.
 
 When the AP--IRS channel has a scattered component, more iterations are needed, but convergence is
 still fast: for the Rayleigh case the power after six iterations is within \gapRay\udB{} of the lower
-bound. The gain of the IRS is also much smaller in that case, because a full-rank random $\Gm$ does not
+bound. The gain of the IRS is also smaller in that case (at $d=45$\,m about 4.4\,dB against 6.6\,dB with a LoS
+link, compared with no IRS), because a full-rank random $\Gm$ does not
 let the $N$ reflections be aligned for all AP antennas at once. This supports the usual advice to
 place the IRS in line of sight of the AP.
 
@@ -542,9 +545,11 @@ an addition of our own we quantised the optimised phases to $b$ bits and recompu
 \end{figure}
 
 At $N=160$ the loss with respect to continuous phases is \lossOne\udB{} for 1-bit elements,
-\lossTwo\udB{} for 2 bits and \lossThree\udB{} for 3 bits. All curves keep the same slope, so the squared
+\lossTwo\udB{} for 2 bits and \lossThree\udB{} for 3 bits. All curves keep nearly the same slope (5.7--5.9\,dB per doubling of $N$), so the squared
 power gain survives quantisation: a coarse phase error reduces the coherent sum by a constant factor
-but does not change how it grows with $N$. Two bits per element already recover almost all of the
+but does not change how it grows with $N$. For a phase error spread uniformly over one quantisation
+step, this factor is $\mathrm{sinc}$-shaped, $\sin(\pi/2^b)/(\pi/2^b)$, which predicts losses of 3.9, 0.9
+and 0.2\,dB for $b=1,2,3$, in agreement with the simulated values. Two bits per element already recover almost all of the
 gain, which is encouraging for low-cost hardware.
 
 \subsection{Comparison with the results in the paper}
@@ -635,8 +640,8 @@ phase shifts (at $N=160$).
 \subsection{Difficulties encountered and how we addressed them}
 
 \textbf{Optimisation concepts.} Semidefinite relaxation, lifting, and Gaussian randomisation were not
-covered in this course. To get an understanding of the general case, we considered $N=1$ and $N=2$ and
-found the obvious optimal phase shifts. We also found a useful tutorial~\cite{luo}.
+covered in this course. To check our understanding, we compared the SDR solution with the closed-form alternating
+algorithm on the same channels, where the two agree (Experiments 1 and 3). We also found a useful tutorial~\cite{luo}.
 
 \textbf{Long run times.} An initial implementation of this code used an interior-point solver. In this
 case, for $N=40$, each realisation took around 10 seconds. As a smooth curve requires thousands of
@@ -649,8 +654,11 @@ only take a fraction of a millisecond per realisation.
 give a plausible-looking curve. Therefore, multiple checks were made. The alternating optimisation
 must never fall below the lower bound provided by SDR, and should be close to it. The no-IRS curve must
 match the expected value from the path-loss model. Finally, for a user near the IRS, the required power
-must fall by about 6\,dB for each doubling of $N$. The notation for Hermitian conjugation ($\hdv$ vs
-$\hdv^H$) caused many mistakes early in this project. These were found from the checks.
+must fall by about 6\,dB for each doubling of $N$. The lower-bound check exposed a real problem: when the closed-form schemes were first averaged over
+more channel realisations than the bound, they appeared up to 0.3\,dB below it, which led to the
+matched-sample design described in Section~3.1. A reviewer also found that the definition of the
+phase vector $\vvec$ in our report did not match the code (one used the conjugate of the other);
+the convention is now stated explicitly in \eqref{eq:vdef}.
 
 \textbf{Unexpected result.} The top three techniques all produced identical results to many decimal
 places. However, by analysing algebraically the case of a rank-one $\Gm$

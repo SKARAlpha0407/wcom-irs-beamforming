@@ -194,7 +194,7 @@ text(s, 0.6, 1.5, 6.3, 4.8, [
     ("deploy relays or more base stations", {"level": 1, "bullet": True}),
     ("An intelligent reflecting surface (IRS, also called RIS) is a panel of N low-cost passive elements. "
      "Each element reflects the incoming signal with an adjustable phase shift.", {"bullet": True}),
-    ("No RF chains, no amplifiers, no added noise.", {"bullet": True, "bold": True, "color": TEAL}),
+    ("No transmit RF chains, no amplifiers, no noise amplification.", {"bullet": True, "bold": True, "color": TEAL}),
 ], size=19, space=8)
 card(s, 7.3, 1.6, 5.4, 4.5, "Key question of the paper", [
     "Given an M-antenna AP, an N-element IRS and a user with an SNR target,",
@@ -394,7 +394,7 @@ s = new_slide("Result 1: transmit power against user position", M3,
               "here, and that each single-beam heuristic only works in one region.")
 picture(s, "fig1_power_vs_distance.png", 0.5, 1.4, h=5.45)
 text(s, 8.3, 1.5, 4.5, 5.3, [
-    ("Near the AP: all schemes agree, the direct link dominates.", {"bullet": True}),
+    ("Near the AP: the direct link dominates; all schemes except AP-IRS MRT agree.", {"bullet": True}),
     (f"Mid-way (d ≈ {d[ipk]} m): worst case, {fmt(c1['Alternating optimization'][ipk])} dBm.",
      {"bullet": True}),
     (f"Near the IRS (d = 50 m): the IRS saves {fmt(save50)} dB against no IRS.",
@@ -472,14 +472,14 @@ s = new_slide("Challenges and how we handled them", M3,
               "Three honest difficulties and what we did about each.")
 ch = [("Understanding the mathematics",
        "SDR, lifting and rank relaxation were new to us.",
-       "We first worked the N = 1 and N = 2 cases by hand, then read the general derivation."),
+       "Compared the SDR solution with the closed-form algorithm on the same channels: they agree."),
       ("Slow SDP solves",
        "The first solver took about 10 s per channel for N = 40; thousands of solves were needed.",
        "Switched to a first-order solver (SCS), ran user positions in parallel, and used the closed-form "
        "algorithm wherever the SDP was not needed."),
       ("Checking our own code",
-       "A wrong sign in a phase still produces a plausible-looking curve.",
-       "Three independent checks: the SDR lower bound, the no-IRS closed form, and the 6 dB-per-doubling law.")]
+       "A wrong sign or conjugate still gives a plausible-looking curve.",
+       "Checks against the SDR bound, the no-IRS closed form and the 6 dB law. The bound check exposed a sampling mismatch (up to 0.3 dB).")]
 for i, (t, prob, fix) in enumerate(ch):
     y = 1.6 + i * 1.75
     rect(s, 0.6, y, 12.1, 1.55, PALE)
@@ -498,7 +498,7 @@ card(s, 0.6, 1.6, 4.0, 3.9, "Key findings", [
     ("Joint active and passive beamforming cuts transmit power sharply for users near the IRS "
      f"({fmt(save50)} dB at d = 50 m, N = {e1['N']}).", {"bullet": True}),
     ("A closed-form alternating algorithm reaches the SDR bound.", {"bullet": True}),
-    ("Power falls as 1/N²: 6 dB per doubling of the surface.", {"bullet": True}),
+    ("Near the IRS, power falls as 1/N²: about 6 dB per doubling of the surface.", {"bullet": True}),
 ], size=15)
 card(s, 4.67, 1.6, 4.0, 3.9, "Limitations", [
     ("Perfect channel knowledge is assumed; a passive IRS cannot estimate channels itself.",
