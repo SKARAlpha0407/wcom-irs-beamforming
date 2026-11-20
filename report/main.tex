@@ -90,63 +90,70 @@ Shreyas Kumar Rai & 23UCC601 \\
 
 \subsection{The key problem addressed in the paper}
 
-A wireless link is only as good as its channel. When a user is far from the access point (AP), or
-when a wall or a building blocks the direct path, the received power falls quickly because of path
-loss and shadowing. The usual remedies are to transmit more power, to add antennas and radio-frequency
-(RF) chains at the AP, or to install relays and extra base stations. Each of these adds active
-hardware and consumes energy.
+In wireless communication, the quality of the received signal is limited by the channel. However, if
+the distance between the user and the access point (AP) is large, or the signal is blocked by a
+wall/building, the signal strength will rapidly decrease due to path loss and shadowing. Solutions to
+this issue include increasing the transmit power, increasing the number of antennas and
+radio-frequency (RF) chains at the AP, or using relays and additional base stations. However, all of
+these solutions either need more transmit power or add more active hardware, and therefore increase
+energy consumption.
 
-The paper~\cite{wu} studies a different remedy: an \emph{intelligent reflecting surface} (IRS), also called a
-reconfigurable intelligent surface (RIS). An IRS is a flat panel of $N$ small passive elements. Each
-element re-radiates the wave that falls on it and applies a phase shift that a controller can set. The
-panel has no amplifiers and no RF chains. By choosing the $N$ phase shifts well, the reflected waves
-can be made to add constructively at the user.
+This paper~\cite{wu} studies a network aided by an \emph{Intelligent Reflecting Surface} (IRS) and
+proposes how to configure it together with the AP. The IRS consists of $N$ passive elements. These
+elements can reflect the incident wave, with a phase shift set by a controller attached to the IRS. It
+needs no transmit RF chains or amplifiers. Careful selection of phase shifts for each element makes the
+reflected waves add constructively with the direct signal from the AP at the user.
 
-The precise question the paper answers is the following. An AP with $M$ antennas serves single-antenna
-users with the help of one IRS. Each user needs a given signal-to-interference-plus-noise ratio (SINR).
-\textbf{How should the transmit beamforming at the AP (the active part) and the phase shifts at the
-IRS (the passive part) be chosen together so that the total transmit power of the AP is as small as
-possible?}
+In this paper, it is considered that there are $K$ single-antenna users being served in the downlink
+by an AP with $M$ antennas, aided by one IRS. Each user requires a certain signal-to-interference-plus-noise
+ratio (SINR). The question is: \textbf{How should the active beamforming vectors at the AP and phase
+shifts at the IRS be designed to minimise the total transmit power from the AP?} Our simulations focus
+on the single-user case ($K=1$), which the paper treats separately.
 
-The two sets of variables are coupled. The best transmit beam depends on what the IRS does, and the
-best IRS phases depend on where the AP points its beam. In addition, every reflection coefficient
-must have unit modulus, since a passive element can change the phase of a wave but not amplify it.
-These two facts make the problem non-convex, so it cannot be handed directly to a standard solver.
+Due to coupling between the variables, optimising the beamforming vectors requires knowledge of how the
+phase shifts are set and vice versa. Furthermore, a passive element cannot amplify the wave, so its
+reflection amplitude can be at most 1; the paper sets it to exactly 1 to maximise reflection, so that
+each element only adjusts the phase. This unit-modulus constraint, together with the coupling, makes
+the problem non-convex, so it cannot be solved directly by standard convex optimisation solvers.
 
 \subsection{Motivation behind the research problem}
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt]
-\item \textbf{Energy.} Each generation of cellular networks has used more antennas, more bandwidth and
-more sites, and the energy bill has grown with them. A surface that improves the link without
-radiating any power of its own is attractive for energy-efficient 6G networks.
-\item \textbf{Hardware cost.} A massive MIMO array needs one RF chain per antenna. An IRS element needs
-only a tunable component such as a PIN diode or a varactor, so a surface with hundreds of elements is
-realistic.
-\item \textbf{A controllable channel.} In the classical view the channel is given by nature and the
-transmitter and receiver adapt to it. With an IRS the network can partly shape the channel. Before
-this paper it was not clear how much could be gained from that, nor how to compute the right
-configuration.
-\item \textbf{No added noise.} A relay receives, amplifies and retransmits, which adds noise and, in
-half-duplex operation, halves the usable time. An IRS reflects in full duplex and adds no noise.
+\item \textbf{Energy efficiency.} As generations of mobile networks progress, they contain more
+antennas, wider bandwidths, and more sites. In turn, the energy consumed increases. As the IRS has no
+transmit power consumption of its own~\cite{wu}, it would be beneficial to use in energy-efficient 6G
+networks.
+\item \textbf{Cost efficiency.} Fully digital massive MIMO systems require one RF chain to be included
+per antenna. However, only a tunable element (such as a PIN diode/varactor) is required for each
+element within the IRS. Hence, having hundreds of elements within an IRS is feasible.
+\item \textbf{Controllable channel.} Traditionally, the channel within a communication system is
+uncontrollable, and the transmitter/receiver must adapt to it. However, with an IRS, partial control
+can be applied to the channel. This paper shows how large the resulting gain can be (the $N^2$ power
+scaling law) and gives algorithms to calculate the correct configuration.
+\item \textbf{No noise amplification.} Amplify-and-forward relays amplify their own receiver noise
+along with the signal. In half-duplex mode, they also need two time slots, which makes them less
+spectrally efficient. However, the IRS operates in full-duplex and does not amplify noise~\cite{wu}.
+(The paper also shows that a full-duplex relay can still perform better when $N$ is small.)
 \end{itemize}
 
 \subsection{Why we selected this problem}
 
-We chose this paper for three reasons.
+There were three main reasons for choosing this paper.
 
-First, it builds directly on the content of our course. The channels are described by path loss and by
-Rayleigh and Rician fading (Unit~II). The optimal transmit beamformer turns out to be maximum ratio
-transmission, which is the transmit-side counterpart of the maximum ratio combining that we studied
-under diversity (Unit~III). The comparison with large antenna arrays connects to MIMO and massive MIMO
-(Unit~IV). We could therefore follow the paper with the tools we already had and learn one new tool,
-semidefinite relaxation, on top.
+It relates directly to concepts we have covered in the course. Path loss and fading models have been
+discussed (Unit~II). In the single-user case, the optimal beamforming vector for transmission is
+maximum ratio transmission~\cite{tse,goldsmith}, which corresponds to maximum ratio combining at
+reception (covered in diversity, Unit~III). Comparing large antenna arrays relates to MIMO systems and
+massive MIMO (Unit~IV). Therefore, we were able to understand most of the paper with the tools we had
+already, whilst still learning a new tool (semidefinite relaxation).
 
-Second, the solution has a clear physical meaning. After all the optimisation theory, the answer is
-``rotate each reflected path so that it arrives in phase with the others''. This makes the results
-easy to interpret and to check.
+The solution has an intuitive interpretation. Despite the complex optimisation methods, the single-user
+result is simply to rotate each reflected path so that it arrives in phase with the direct path. This
+means the results are easily interpretable.
 
-Third, every claim in the single-user part of the paper can be tested by simulation on a laptop. This
-allowed us to verify the results ourselves and not only read them.
+The main single-user results of the paper can be simulated on a laptop. Therefore, we were able to
+reproduce them and check the trends against the paper; the differences in absolute values are discussed
+in Section~\ref{sec:diff}.
 
 \subsection{Importance and relevance}
 
