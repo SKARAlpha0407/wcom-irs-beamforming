@@ -29,6 +29,11 @@ no_irs_closed = 10 * np.log10(10 ** (P["gamma_dB"] / 10) * 10 ** ((P["noise_dBm"
                               / ((P["M"] - 1) * _L)) + 30
 
 
+no_irs_pl = 10 * np.log10(10 ** (P["gamma_dB"] / 10) * 10 ** ((P["noise_dBm"] - 30) / 10) / _L) + 30
+# Values read from the vector data of the paper's figures (d = 50 m)
+PAPER = {"noirs50": 19.19, "n20": 4.49, "n30": 1.49, "n60": -4.06}
+
+
 def f(x, nd=1):
     s = f"{x:.{nd}f}"
     return "0.0" if s == "-0.0" else s
@@ -60,13 +65,23 @@ m = {
     "gapRay": small(ray["AO"][-1] - ray["lower_bound"]),
     "lossOne": f(e4["1-bit phase shifters"][-1] - e4["Alternating optimization"][-1]),
     "lossTwo": f(e4["2-bit phase shifters"][-1] - e4["Alternating optimization"][-1]),
+    "aoNtwenty": f(ao50[N.index(20)]),
     "aoNthirty": f(ao50[N.index(30)]),
     "aoNsixty": f(ao50[N.index(60)]),
-    "offNthirty": f(2.0 - ao50[N.index(30)]),
-    "offNsixty": f(-4.0 - ao50[N.index(60)]),
+    # paper values read exactly from the vector data of its Fig. 3 and Fig. 4(a)
+    "paperNoIrs": f(PAPER["noirs50"], 2),
+    "paperNtwenty": f(PAPER["n20"], 2),
+    "paperNthirty": f(PAPER["n30"], 2),
+    "paperNsixty": f(PAPER["n60"], 2),
+    "offNoIrs": f(PAPER["noirs50"] - c["Without IRS"][i50]),
+    "offNtwenty": f(PAPER["n20"] - ao50[N.index(20)]),
+    "offNthirty": f(PAPER["n30"] - ao50[N.index(30)]),
+    "offNsixty": f(PAPER["n60"] - ao50[N.index(60)]),
     "dropPaper": f(ao50[N.index(30)] - ao50[N.index(60)]),
+    "dropPaperFig": f(PAPER["n30"] - PAPER["n60"]),
     "closedNoIrs": f(no_irs_closed),
-    "offNoIrs": f(19.0 - c["Without IRS"][i50], 0),
+    "plNoIrs": f(no_irs_pl, 2),
+    "offPl": f(PAPER["noirs50"] - no_irs_pl, 2),
     "lossThree": f(e4["3-bit phase shifters"][-1] - e4["Alternating optimization"][-1]),
 }
 

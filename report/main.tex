@@ -567,42 +567,66 @@ clearly sub-optimal in the other region;
 \end{itemize}
 
 All parameters stated in Section~V of~\cite{wu} (Table~\ref{tab:params}) are used unchanged. The
-\emph{trends} agree, but our absolute power levels are a few dB lower than the paper's, as the
-following numbers show.
+\emph{trends} agree, but our absolute power levels are a few dB lower than the paper's. To compare
+precisely, we did not read values off the paper's plots by eye: its figures are stored as vector
+graphics, so we extracted the plotted coordinates directly and converted them to dBm using the
+gridlines (accuracy about $\pm0.02$\,dB). Table~\ref{tab:vspaper} compares these values with ours.
 
 \begin{table}[H]
 \centering
-\caption{Our results against values read from the paper (transmit power in dBm).}
+\caption{Our results against values extracted from the paper's figures (transmit power in dBm, $d=50$\,m).}
 \label{tab:vspaper}
 \begin{tabular}{lrrr}
 \toprule
 Case & Paper & Ours & Difference \\
 \midrule
-Without IRS, $d=50$\,m (Fig.~3 of the paper) & $\approx 19$ & $\noIrsFifty$ & $\approx \offNoIrs$ \\
-Joint design, $d=50$\,m, $N=30$ (text of the paper) & $2$ & $\aoNthirty$ & $\offNthirty$ \\
-Joint design, $d=50$\,m, $N=60$ (text of the paper) & $-4$ & $\aoNsixty$ & $\offNsixty$ \\
-Saving from doubling $N$ (30 to 60) & $\approx 6$\,dB & $\dropPaper$\,dB & \\
+Without IRS (Fig.~3 of~\cite{wu}) & $\paperNoIrs$ & $\noIrsFifty$ & $\offNoIrs$ \\
+Joint design, $N=20$ (Fig.~3 and Fig.~4(a) of~\cite{wu}) & $\paperNtwenty$ & $\aoNtwenty$ & $\offNtwenty$ \\
+Joint design, $N=30$ (Fig.~4(a) of~\cite{wu}) & $\paperNthirty$ & $\aoNthirty$ & $\offNthirty$ \\
+Joint design, $N=60$ (Fig.~4(a) of~\cite{wu}) & $\paperNsixty$ & $\aoNsixty$ & $\offNsixty$ \\
+Saving from doubling $N$ (30 to 60), in dB & $\dropPaperFig$ & $\dropPaper$ & \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The ``without IRS'' case is the simplest check, since it involves no optimisation at all. For an
-$M$-antenna Rayleigh channel with path loss $L$, $\|\hdv\|^2/L$ follows a Gamma$(M,1)$ distribution,
-so the average power is $\mathbb{E}[\gamma\sigma^2/\|\hdv\|^2]=\gamma\sigma^2/\big((M-1)L\big)$. With
-the stated parameters this gives $\closedNoIrs$\,dBm at $d=50$\,m, which matches our simulation
-($\noIrsFifty$\,dBm). The paper's curve is about $\offNoIrs$\,dB higher. We could not find the cause
-in the text of the paper. Possible reasons are an unstated difference in the channel normalisation, or
-averaging over a different quantity. Because this offset already appears in the case without the
-IRS, it is a difference in the channel model and not in the beamforming algorithms. The offset is
-smaller for the IRS-aided curves, which depend on the AP--IRS and IRS--user links as well.
+The saving from doubling $N$ is the same in both, so the $N^2$ scaling is reproduced exactly; only
+the absolute levels differ. The extracted data show that the difference has two separate parts.
 
-The remaining differences between our model and the paper's are minor:
+\textbf{Direct link (without IRS).} For an $M$-antenna Rayleigh channel with path loss $L$,
+$\|\hdv\|^2/L$ follows a Gamma$(M,1)$ distribution, so the average power is
+$\mathbb{E}[\gamma\sigma^2/\|\hdv\|^2]=\gamma\sigma^2/\big((M-1)L\big)$. This gives $\closedNoIrs$\,dBm at
+$d=50$\,m, which matches our simulation ($\noIrsFifty$\,dBm). The paper's curve behaves differently.
+At all seven distances of its Fig.~3 it equals $\gamma\sigma^2/L(d)$, the power needed with path loss
+alone ($\plNoIrs$\,dBm at $d=50$\,m), minus a constant $0.29$\,dB, its fitted path-loss exponent is
+3.50, and it shows no Monte Carlo fluctuation. The paper's benchmark therefore does not include the
+averaging over four-antenna Rayleigh fading that ours does: it corresponds to an effective channel
+gain of about $1.07\,L(d)$, roughly one antenna without fading. Of our factor $M-1=3$, the four
+antennas give a gain of 4 and the fading average costs a factor $4/3$; together with the $0.29$\,dB
+this accounts for the whole $\offNoIrs$\,dB difference. Since no optimisation is involved here, this
+part of the offset comes from the channel model, not from the beamforming algorithms.
+
+\textbf{Reflected link.} Next to the IRS, where the reflected path dominates, the paper's joint design
+needs $\offNtwenty$--$\offNsixty$\,dB more power than ours at every $N$. Removing the array gain from
+the direct link does not explain this: we re-ran our simulator with that change and it fixed the
+points near the AP but not these. Because the offset is nearly constant in $N$, it corresponds to a
+reflected path about half as strong as ours. We could not trace it to anything stated in the paper,
+and it does not affect the $N^2$ comparison above.
+
+The remaining differences between our model and the paper's are smaller:
 \begin{enumerate}[leftmargin=1.6em,itemsep=2pt]
+\item \textbf{Number of elements in the distance sweep.} The text of~\cite{wu} does not state $N$ for
+its Fig.~3, but the extracted data settle it: at $d=50$\,m every scheme in Fig.~3 matches Fig.~4(a) at
+$N=20$ (for example, the joint design needs \paperNtwenty\,dBm in both, against \paperNthirty\,dBm at
+$N=30$). Our Experiment~1 uses $N=\Nsim$, so it is not directly comparable with the paper's Fig.~3; at
+$N=20$ our joint design needs \aoNtwenty\,dBm at $d=50$\,m.
+\item \textbf{An inconsistency within the paper.} The ``without IRS'' value in the paper's Fig.~4(c)
+($d=15$\,m) is 2.23\,dBm, whereas the rule that fits Fig.~3 and Fig.~4(a,b) predicts 1.01\,dBm. Under
+the paper's own path-loss model, 2.23\,dBm corresponds to $d\approx16.3$\,m, so no single channel
+model reproduces all of the paper's no-IRS values.
 \item \textbf{Array geometry.} The paper uses a $5\times N/5$ uniform rectangular array at the IRS; we
-use a uniform linear array. With a rank-one LoS AP--IRS channel the optimal power depends only on the
-magnitudes of the channel entries, so the geometry does not change the averages.
-\item \textbf{Number of elements in the distance sweep.} We did not find the value of $N$ used for
-Fig.~3 of the paper in its text, and used $N=\Nsim$.
+use a uniform linear array with random angles in each realisation. With a rank-one LoS AP--IRS
+channel the optimal power depends only on the magnitudes of the channel entries, so the geometry does
+not change the averages.
 \item \textbf{Monte Carlo accuracy.} Experiments 1 and 3 use \nSdr{} channel realisations, which
 leaves a statistical uncertainty of a few tenths of a dB, mainly in the ``without IRS'' curve, where a
 single deep fade of the direct link has a large effect on the average.
