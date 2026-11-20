@@ -96,7 +96,7 @@ loss and shadowing. The usual remedies are to transmit more power, to add antenn
 (RF) chains at the AP, or to install relays and extra base stations. Each of these adds active
 hardware and consumes energy.
 
-The paper studies a different remedy: an \emph{intelligent reflecting surface} (IRS), also called a
+The paper~\cite{wu} studies a different remedy: an \emph{intelligent reflecting surface} (IRS), also called a
 reconfigurable intelligent surface (RIS). An IRS is a flat panel of $N$ small passive elements. Each
 element re-radiates the wave that falls on it and applies a phase shift that a controller can set. The
 panel has no amplifiers and no RF chains. By choosing the $N$ phase shifts well, the reflected waves
@@ -150,16 +150,20 @@ allowed us to verify the results ourselves and not only read them.
 
 \subsection{Importance and relevance}
 
-This paper is one of the first to treat the AP beamformer and the IRS phases as a joint optimisation
+This paper~\cite{wu} is one of the first to treat the AP beamformer and the IRS phases as a joint optimisation
 problem, and it established two results that later work relies on. The first is an algorithmic
 template, alternating optimisation with a semidefinite-relaxation benchmark, that has been reused for
 IRS-aided secure communication, wireless power transfer, UAV links and integrated sensing. The second
-is the \emph{squared power gain}: the received power grows with $N^2$, which is faster than the
+is the \emph{squared power gain}~\cite{wu,wu_mag}: the received power grows with $N^2$, which is faster than the
 factor $N$ obtained from an $N$-antenna active array. This scaling law is the main quantitative
 argument for the use of large passive surfaces, and it is the result that we set out to confirm.
 
 %=============================================================================
 \section{Solution Presented in the Paper}
+
+This section summarises the system model and the solution methods of~\cite{wu} in our own words. The
+equations and notation follow~\cite{wu}; the explanations, the interpretation in terms of our course
+material, and any errors are ours.
 %=============================================================================
 
 \subsection{System model}
@@ -208,7 +212,7 @@ entries of $\Thm$ are restricted to the unit circle.
 
 If the phases are fixed, the combined channel $\bm{h}^H = \hrv^H\Thm\Gm+\hdv^H$ is an ordinary
 $1\times M$ channel. The beamformer that delivers a given SNR with the least power is maximum ratio
-transmission (MRT),
+transmission (MRT)~\cite{tse,goldsmith},
 \begin{equation}
 \wv^\star = \sqrt{P}\,\frac{\left(\hrv^H\Thm\Gm+\hdv^H\right)^H}{\left\|\hrv^H\Thm\Gm+\hdv^H\right\|},
 \qquad
@@ -227,7 +231,7 @@ Minimising the transmit power is therefore the same as maximising the gain of th
 
 \subsection{Step 2a: semidefinite relaxation (SDR)}
 
-\textbf{Convention.} Following the paper, the optimisation vector is defined as
+\textbf{Convention.} Following~\cite[Sec.~III-A]{wu}, the optimisation vector is defined as
 \begin{equation}
 \vvec=\left[e^{j\theta_1},\dots,e^{j\theta_N}\right]^H,
 \qquad\text{so that}\qquad v_n=e^{-j\theta_n},
@@ -246,7 +250,7 @@ form $\bar{\vvec}^H\Rm\,\bar{\vvec}+\|\hdv\|^2$ with
 \begin{equation}
 \Rm=\begin{bmatrix}\Phm\Phm^H & \Phm\hdv\\ \hdv^H\Phm^H & 0\end{bmatrix}.
 \end{equation}
-The constraint $|\bar v_n|=1$ is still non-convex. The idea of SDR is to \emph{lift} the problem to the
+The constraint $|\bar v_n|=1$ is still non-convex. The idea of SDR~\cite{luo} is to \emph{lift} the problem to the
 matrix $\Vm=\bar{\vvec}\bar{\vvec}^H$. Since $\bar{\vvec}^H\Rm\bar{\vvec}=\mathrm{tr}(\Rm\Vm)$, the objective is
 linear in $\Vm$, and the unit-modulus constraints become $V_{nn}=1$. The matrix $\Vm$ must be positive
 semidefinite and of rank one. Only the rank-one condition is non-convex. Dropping it gives
@@ -270,7 +274,7 @@ grows quickly with $N$.
 
 \subsection{Step 2b: alternating optimisation}
 
-To avoid the SDP, the paper proposes a low-complexity algorithm that alternates between the two sets of
+To avoid the SDP, the paper proposes a low-complexity algorithm~\cite[Sec.~III-B]{wu} that alternates between the two sets of
 variables.
 
 \textbf{Phases for a fixed beamformer.} For a fixed $\wv$, the received amplitude is
@@ -296,7 +300,7 @@ the IRS. Both are used as benchmarks.
 
 \subsection{The squared power scaling law}
 
-To see how the gain grows with $N$, the paper considers a single-antenna AP, ignores the direct link,
+To see how the gain grows with $N$, the paper~\cite[Prop.~2]{wu} considers a single-antenna AP, ignores the direct link,
 and takes $\hrv\sim\mathcal{CN}(\bm{0},\varrho_h^2\bm{I})$ and $\bm{g}\sim\mathcal{CN}(\bm{0},\varrho_g^2\bm{I})$.
 With the optimal phases \eqref{eq:phase} the received power is
 $P_r = P\left(\sum_{n=1}^N |h_{r,n}|\,|g_n|\right)^2$. For large $N$ the sum is close to
@@ -314,7 +318,7 @@ gain of only $N$, or $3\udB$ per doubling.
 
 \subsection{Extension to several users}
 
-The paper also treats $K$ users served at the same time. Each user then has an SINR constraint that
+The paper also treats $K$ users~\cite[Sec.~IV]{wu} served at the same time. Each user then has an SINR constraint that
 includes the interference from the beams of the other users, and MRT is no longer optimal. The same
 alternating idea is used. For fixed phases, the transmit beamformers are found from a standard
 second-order cone programme (or with minimum mean-square-error beamforming). For fixed beamformers,
@@ -376,7 +380,7 @@ largest path-loss exponent to represent blockage.
 
 \subsection{Parameters}
 
-Table~\ref{tab:params} lists the parameters. They are the values stated in Section~V of the paper for the single-user
+Table~\ref{tab:params} lists the parameters. They are the values stated in Section~V of~\cite{wu} for the single-user
 case. The remaining differences in the model are discussed in Section~\ref{sec:diff}.
 
 \begin{table}[H]
@@ -545,7 +549,7 @@ clearly sub-optimal in the other region;
 \item the transmit power near the IRS falls by about 6\udB{} when $N$ is doubled.
 \end{itemize}
 
-All parameters stated in Section~V of the paper (Table~\ref{tab:params}) are used unchanged. The
+All parameters stated in Section~V of~\cite{wu} (Table~\ref{tab:params}) are used unchanged. The
 \emph{trends} agree, but our absolute power levels are a few dB lower than the paper's, as the
 following numbers show.
 
