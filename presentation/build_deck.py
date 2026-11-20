@@ -444,27 +444,55 @@ text(s, 6.9, 5.75, 5.9, 1.2, [
     ("The N-squared slope is kept even with 1-bit elements.", {"bullet": True})], size=14, space=4)
 
 # ============================ 14. Vs paper =================================
+# Paper values extracted from the vector data of its Fig. 3 and Fig. 4(a), d = 50 m
+PAPER = {"noirs": 19.19, 20: 4.49, 30: 1.49, 60: -4.06}
 s = new_slide("Our results against the paper", M3,
-              "Be straightforward: the shapes and conclusions match the paper. Absolute dBm values need "
-              "not be identical, and list why. If asked, the multiuser part of the paper was studied but "
-              "not simulated.")
-card(s, 0.6, 1.6, 5.9, 3.9, "What we reproduced", [
-    ("Same three-region behaviour of power against distance", {"bullet": True}),
-    ("Joint design matches the SDR lower bound", {"bullet": True}),
-    ("AP-user MRT is good near the AP only, AP-IRS MRT near the IRS only", {"bullet": True}),
-    ("About 6 dB saved per doubling of N near the IRS", {"bullet": True}),
-    ("Alternating optimization converges in a few steps", {"bullet": True}),
-], size=16)
-card(s, 6.8, 1.6, 5.9, 3.9, "Where our numbers differ", [
-    ("All parameters stated in the paper are used unchanged.", {"bullet": True}),
-    (f"Without IRS at d = 50 m: paper \u2248 19 dBm, ours {fmt(c1['Without IRS'][i50])} dBm. "
-     "Our value matches the closed-form average, so the gap is in the channel model, "
-     "not the algorithms.", {"bullet": True}),
-    (f"Joint design, d = 50 m: paper 2 / \u22124 dBm at N = 30 / 60; ours {fmt(ao50[N2.index(30)])} / "
-     f"{fmt(ao50[N2.index(60)])} dBm.", {"bullet": True}),
-    (f"Saving from doubling N: paper \u2248 6 dB, ours {fmt(ao50[N2.index(30)] - ao50[N2.index(60)])} dB.",
-     {"bullet": True, "bold": True, "color": TEAL}),
-    ("Single-user case only; multiuser part studied, not simulated.", {"bullet": True}),
+              "All parameters stated in the paper are used unchanged. The paper's values come from the "
+              "vector data of its figures, so they are exact, not eyeballed. Trends and the N-squared "
+              "scaling match exactly; absolute levels differ, in two separate parts. Direct link: the "
+              "paper's no-IRS curve is gamma sigma^2 / L(d) minus 0.29 dB at every distance, with no "
+              "fading average, roughly one antenna. Ours averages over 4-antenna Rayleigh fading, which "
+              "gives gamma sigma^2 / (3L): that is the 4.4 dB. Reflected link: a further 2.6 to 2.9 dB "
+              "we could not trace, constant in N. If asked: the paper's Fig. 3 uses N = 20, inferred "
+              "because it matches Fig. 4(a) at N = 20.")
+rows = [("d = 50 m", "Paper", "Ours", "Diff."),
+        ("Without IRS", f"{PAPER['noirs']:.2f}", fmt(c1['Without IRS'][i50]),
+         fmt(PAPER['noirs'] - c1['Without IRS'][i50])),
+        ("Joint design, N = 20", f"{PAPER[20]:.2f}", fmt(ao50[N2.index(20)]), fmt(PAPER[20] - ao50[N2.index(20)])),
+        ("Joint design, N = 30", f"{PAPER[30]:.2f}", fmt(ao50[N2.index(30)]), fmt(PAPER[30] - ao50[N2.index(30)])),
+        ("Joint design, N = 60", f"{PAPER[60]:.2f}", fmt(ao50[N2.index(60)]), fmt(PAPER[60] - ao50[N2.index(60)])),
+        ("Saving, N 30\u219260 (dB)", fmt(PAPER[30] - PAPER[60]), fmt(ao50[N2.index(30)] - ao50[N2.index(60)]), "")]
+tbl = s.shapes.add_table(len(rows), 4, Inches(0.6), Inches(1.55), Inches(7.1), Inches(2.4)).table
+for col, w in enumerate((3.5, 1.2, 1.2, 1.2)):
+    tbl.columns[col].width = Inches(w)
+for r, row in enumerate(rows):
+    for col, val in enumerate(row):
+        cell = tbl.cell(r, col)
+        cell.text = val
+        para = cell.text_frame.paragraphs[0]
+        para.alignment = PP_ALIGN.LEFT if col == 0 else PP_ALIGN.RIGHT
+        run = para.runs[0] if para.runs else para.add_run()
+        run.font.size, run.font.name = Pt(14), FONT
+        run.font.bold = r == 0 or r == len(rows) - 1
+        run.font.color.rgb = WHITE if r == 0 else (TEAL if r == len(rows) - 1 else INK)
+        cell.fill.solid()
+        cell.fill.fore_color.rgb = NAVY if r == 0 else (PALE if r % 2 else WHITE)
+text(s, 0.6, 4.0, 7.1, 0.35, ["Paper values: exact data extracted from its vector figures (dBm)."],
+     size=11, color=GREY)
+card(s, 8.0, 1.55, 4.7, 2.75, "What matches", [
+    ("Three-region shape against distance", {"bullet": True}),
+    ("Joint design on the SDR bound", {"bullet": True}),
+    ("Where each MRT scheme fails", {"bullet": True}),
+    ("N\u00b2 scaling: same saving per doubling", {"bullet": True, "bold": True, "color": TEAL}),
+], size=14)
+card(s, 0.6, 4.5, 12.1, 2.3, "Why the absolute levels differ", [
+    ("Direct link: the paper's no-IRS curve = \u03b3\u03c3\u00b2/L(d) \u2212 0.29 dB at all 7 distances "
+     "(no fading average, about one antenna). Ours averages 4-antenna Rayleigh fading: \u03b3\u03c3\u00b2/(3L). "
+     "This explains the 4.4 dB.", {"bullet": True}),
+    ("Reflected link: a further 2.6\u20132.9 dB, constant in N, not traceable to the paper's text; "
+     "the N\u00b2 comparison is unaffected.", {"bullet": True}),
+    ("The paper's Fig. 3 uses N = 20 (it matches Fig. 4(a) at N = 20); our Experiment 1 uses N = 40.",
+     {"bullet": True}),
 ], size=14, accent=RED)
 
 # ============================ 15. Challenges ===============================
